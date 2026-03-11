@@ -6,6 +6,9 @@ contextBridge.exposeInMainWorld('launcher', {
   maximize: () => ipcRenderer.invoke('window-maximize'),
   close: () => ipcRenderer.invoke('window-close'),
 
+  // Startup
+  startupCheck: () => ipcRenderer.invoke('startup-check'),
+
   // Config
   loadConfig: () => ipcRenderer.invoke('load-config'),
   saveConfig: (config) => ipcRenderer.invoke('save-config', config),
@@ -14,8 +17,12 @@ contextBridge.exposeInMainWorld('launcher', {
   fetchManifest: () => ipcRenderer.invoke('fetch-manifest'),
   syncAndLaunch: (opts) => ipcRenderer.invoke('sync-and-launch', opts),
 
+  // Server ping
+  pingServer: (opts) => ipcRenderer.invoke('ping-server', opts),
+
   // Utilities
   openFolder: (p) => ipcRenderer.invoke('open-folder', p),
+  openExternal: (url) => ipcRenderer.invoke('open-external', url),
   browseMinecraftDir: () => ipcRenderer.invoke('browse-minecraft-dir'),
   getSystemInfo: () => ipcRenderer.invoke('get-system-info'),
 

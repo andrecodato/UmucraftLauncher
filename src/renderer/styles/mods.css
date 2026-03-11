@@ -1,0 +1,38 @@
+/* ─── MODS TAB ───────────────────────────────────────────────────────────── */
+.mods-container {
+  padding: 16px 24px;
+  overflow-y: auto;
+}
+.modpack-group {
+  margin-bottom: 24px;
+}
+.modpack-group-title {
+  font-size: 14px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--accent); margin-bottom: 10px;
+  padding-bottom: 6px; border-bottom: 1px solid var(--border);
+}
+.mods-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+}
+.mod-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 12px 14px;
+  transition: border-color 0.15s;
+}
+.mod-card:hover { border-color: var(--border-bright); }
+.mod-name {
+  font-size: 13px; font-weight: 600; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-bottom: 4px;
+}
+.mod-meta { font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); }
+.mod-link {
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-top: 6px; font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--accent); cursor: pointer; text-decoration: none;
+  transition: color 0.15s;
+}
+.mod-link:hover { color: #6ef799; }

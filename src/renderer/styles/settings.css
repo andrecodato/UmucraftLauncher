@@ -1,0 +1,20 @@
+/* ─── SETTINGS ───────────────────────────────────────────────────────────── */
+.settings-form { padding: 16px 24px; max-width: 600px; }
+.settings-section {
+  margin-bottom: 28px; padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+.settings-section:last-of-type { border-bottom: none; }
+.settings-section h3 {
+  font-size: 14px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--text-dim); margin-bottom: 14px;
+}
+
+#java-status-list {
+  display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px;
+}
+.java-item {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; color: var(--text-dim); font-family: var(--font-mono);
+}
+.java-item .status-dot { flex-shrink: 0; }

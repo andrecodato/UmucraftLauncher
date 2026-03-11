@@ -1,0 +1,25 @@
+/* ─── CSS CUSTOM PROPERTIES ──────────────────────────────────────────────── */
+:root {
+  --bg-deep:    #080c10;
+  --bg-dark:    #0d1117;
+  --bg-card:    #161b22;
+  --bg-hover:   #1c2333;
+  --border:     #30363d;
+  --border-bright: #4ade8055;
+  --accent:     #4ade80;
+  --accent-dim: #4ade8044;
+  --accent-glow:#4ade8022;
+  --forge:      #f97316;
+  --java-col:   #60a5fa;
+  --discord:    #5865F2;
+  --text:       #e6edf3;
+  --text-dim:   #8b949e;
+  --text-muted: #484f58;
+  --danger:     #f85149;
+  --warn:       #e3b341;
+  --radius:     8px;
+  --titlebar:   32px;
+  --sidebar:    64px;
+  --font-main:  'Rajdhani', sans-serif;
+  --font-mono:  'Share Tech Mono', monospace;
+}

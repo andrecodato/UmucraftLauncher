@@ -1,0 +1,29 @@
+/* ─── TITLEBAR ───────────────────────────────────────────────────────────── */
+.titlebar {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: var(--titlebar);
+  background: var(--bg-deep);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 8px 0 12px;
+  -webkit-app-region: drag;
+  z-index: 100;
+}
+.titlebar-logo {
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--font-main); font-weight: 700; font-size: 13px;
+  letter-spacing: 0.05em; color: var(--text-dim);
+}
+.titlebar-controls {
+  display: flex; gap: 2px;
+  -webkit-app-region: no-drag;
+}
+.tb-btn {
+  width: 28px; height: 22px;
+  background: none; border: none; cursor: pointer;
+  color: var(--text-dim); font-size: 11px;
+  border-radius: 4px; transition: background 0.15s, color 0.15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.tb-btn:hover { background: var(--bg-hover); color: var(--text); }
+.tb-btn.close:hover { background: var(--danger); color: #fff; }
