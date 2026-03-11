@@ -1,0 +1,1394 @@
+{
+  "profiles": {
+    "Umucraft Modded 2026": {
+      "minecraftVersion": "1.20.1",
+      "forgeVersion": "47.2.0",
+      "mods": [
+        {
+          "name": "addonslib",
+          "filename": "addonslib-1.20.1-1.7.jar",
+          "version": "",
+          "md5": "ec92416efd1ffec822a6a3b7602f739f",
+          "size": 119300,
+          "url": "COLOQUE_A_URL_DO_addonslib-1.20.1-1.7.jar"
+        },
+        {
+          "name": "advancednetherite forge",
+          "filename": "advancednetherite-forge-2.1.3-1.20.1.jar",
+          "version": "",
+          "md5": "f45134182cb6322895b92b1a7d506029",
+          "size": 522473,
+          "url": "COLOQUE_A_URL_DO_advancednetherite-forge-2.1.3-1.20.1.jar"
+        },
+        {
+          "name": "ae2wtlib",
+          "filename": "ae2wtlib-15.3.3-forge.jar",
+          "version": "",
+          "md5": "9e60a31acb384e832f03bcb16e092ec9",
+          "size": 229518,
+          "url": "COLOQUE_A_URL_DO_ae2wtlib-15.3.3-forge.jar"
+        },
+        {
+          "name": "AEInfinityBooster",
+          "filename": "AEInfinityBooster-1.20.1-1.0.0+51.jar",
+          "version": "",
+          "md5": "d36fb793021c5c76a089fa900667946c",
+          "size": 25924,
+          "url": "COLOQUE_A_URL_DO_AEInfinityBooster-1.20.1-1.0.0+51.jar"
+        },
+        {
+          "name": "AI Improvements",
+          "filename": "AI-Improvements-1.20-0.5.2.jar",
+          "version": "",
+          "md5": "9a6776ce2deab597d198e8755daa56ff",
+          "size": 29553,
+          "url": "COLOQUE_A_URL_DO_AI-Improvements-1.20-0.5.2.jar"
+        },
+        {
+          "name": "alexscaves",
+          "filename": "alexscaves-2.0.2.jar",
+          "version": "",
+          "md5": "6c8793ee5e1aa852fdb430a9cdaccdc5",
+          "size": 74871657,
+          "url": "COLOQUE_A_URL_DO_alexscaves-2.0.2.jar"
+        },
+        {
+          "name": "alexsdelight",
+          "filename": "alexsdelight-1.5.jar",
+          "version": "",
+          "md5": "b969e136e1f9a70c42dd102ed8359b40",
+          "size": 55398,
+          "url": "COLOQUE_A_URL_DO_alexsdelight-1.5.jar"
+        },
+        {
+          "name": "alexsmobs",
+          "filename": "alexsmobs-1.22.9.jar",
+          "version": "",
+          "md5": "504050d1f2e2c3019b6f53377ca354c6",
+          "size": 26350793,
+          "url": "COLOQUE_A_URL_DO_alexsmobs-1.22.9.jar"
+        },
+        {
+          "name": "alltheleaks",
+          "filename": "alltheleaks-1.1.1+1.20.1-forge.jar",
+          "version": "",
+          "md5": "df84fbdadaf7947dc530872fa60fbc56",
+          "size": 1187126,
+          "url": "COLOQUE_A_URL_DO_alltheleaks-1.1.1+1.20.1-forge.jar"
+        },
+        {
+          "name": "almanac",
+          "filename": "almanac-1.20.x-forge-1.0.2.jar",
+          "version": "",
+          "md5": "20f9b054f4caceebda02847c149901af",
+          "size": 15906,
+          "url": "COLOQUE_A_URL_DO_almanac-1.20.x-forge-1.0.2.jar"
+        },
+        {
+          "name": "alternate current mc1.20",
+          "filename": "alternate_current-mc1.20-1.7.0.jar",
+          "version": "",
+          "md5": "43d4d8efddfa77a80aa7b1ae1a04ab48",
+          "size": 36703,
+          "url": "COLOQUE_A_URL_DO_alternate_current-mc1.20-1.7.0.jar"
+        },
+        {
+          "name": "appliedenergistics2 forge",
+          "filename": "appliedenergistics2-forge-15.4.10.jar",
+          "version": "",
+          "md5": "69e47ebd80184d34176cebeb6233a234",
+          "size": 8495956,
+          "url": "COLOQUE_A_URL_DO_appliedenergistics2-forge-15.4.10.jar"
+        },
+        {
+          "name": "Aquaculture",
+          "filename": "Aquaculture-1.20.1-2.5.7.jar",
+          "version": "",
+          "md5": "f39d02c30d59ec516e3221f9f7643909",
+          "size": 601839,
+          "url": "COLOQUE_A_URL_DO_Aquaculture-1.20.1-2.5.7.jar"
+        },
+        {
+          "name": "architectury",
+          "filename": "architectury-9.2.14-forge.jar",
+          "version": "",
+          "md5": "76b40d407b6bf0257dd1dab6d3d395d5",
+          "size": 580602,
+          "url": "COLOQUE_A_URL_DO_architectury-9.2.14-forge.jar"
+        },
+        {
+          "name": "artifacts forge",
+          "filename": "artifacts-forge-9.5.16.jar",
+          "version": "",
+          "md5": "85081468e7498005f5dfdab2ae520097",
+          "size": 850457,
+          "url": "COLOQUE_A_URL_DO_artifacts-forge-9.5.16.jar"
+        },
+        {
+          "name": "AttributeFix Forge",
+          "filename": "AttributeFix-Forge-1.20.1-21.0.5.jar",
+          "version": "",
+          "md5": "e43cd5f7fc4b04e20127359e5bf9af80",
+          "size": 19499,
+          "url": "COLOQUE_A_URL_DO_AttributeFix-Forge-1.20.1-21.0.5.jar"
+        },
+        {
+          "name": "baguettelib",
+          "filename": "baguettelib-1.20.1-Forge-1.1.6.jar",
+          "version": "",
+          "md5": "f729a7d6d7b28ef14e4e8461a5396566",
+          "size": 31898,
+          "url": "COLOQUE_A_URL_DO_baguettelib-1.20.1-Forge-1.1.6.jar"
+        },
+        {
+          "name": "balm forge",
+          "filename": "balm-forge-1.20.1-7.3.38-all.jar",
+          "version": "",
+          "md5": "499467bc8050be8893b08995438cc026",
+          "size": 591397,
+          "url": "COLOQUE_A_URL_DO_balm-forge-1.20.1-7.3.38-all.jar"
+        },
+        {
+          "name": "bellsandwhistles",
+          "filename": "bellsandwhistles-0.4.5-1.20.x-Create6.0+.jar",
+          "version": "",
+          "md5": "05c50f0abc8e5d389329e14b912c0603",
+          "size": 199902,
+          "url": "COLOQUE_A_URL_DO_bellsandwhistles-0.4.5-1.20.x-Create6.0+.jar"
+        },
+        {
+          "name": "BiomesOPlenty forge",
+          "filename": "BiomesOPlenty-forge-1.20.1-19.0.0.96.jar",
+          "version": "",
+          "md5": "886b3d33f1e7dca2a937ec5c5dc19af8",
+          "size": 22381010,
+          "url": "COLOQUE_A_URL_DO_BiomesOPlenty-forge-1.20.1-19.0.0.96.jar"
+        },
+        {
+          "name": "Chunky",
+          "filename": "Chunky-1.3.146.jar",
+          "version": "",
+          "md5": "ed46120ac4f30ec8e03f6416e295577c",
+          "size": 341451,
+          "url": "COLOQUE_A_URL_DO_Chunky-1.3.146.jar"
+        },
+        {
+          "name": "citadel",
+          "filename": "citadel-2.6.3-1.20.1.jar",
+          "version": "",
+          "md5": "da80c09b998d829b6d580e5be76dcc7b",
+          "size": 3185275,
+          "url": "COLOQUE_A_URL_DO_citadel-2.6.3-1.20.1.jar"
+        },
+        {
+          "name": "cloth config",
+          "filename": "cloth-config-11.1.136-forge.jar",
+          "version": "",
+          "md5": "ca5de5acbcb4a30c010aa6953bd7ef53",
+          "size": 1181413,
+          "url": "COLOQUE_A_URL_DO_cloth-config-11.1.136-forge.jar"
+        },
+        {
+          "name": "Clumps forge",
+          "filename": "Clumps-forge-1.20.1-12.0.0.4.jar",
+          "version": "",
+          "md5": "c9efc71827df6ab51e8dd0e40c3d4975",
+          "size": 20299,
+          "url": "COLOQUE_A_URL_DO_Clumps-forge-1.20.1-12.0.0.4.jar"
+        },
+        {
+          "name": "CodeChickenLib",
+          "filename": "CodeChickenLib-1.20.1-4.4.0.516-universal.jar",
+          "version": "",
+          "md5": "5c2f4b34587c6596d1d50e5bf76ee448",
+          "size": 1472390,
+          "url": "COLOQUE_A_URL_DO_CodeChickenLib-1.20.1-4.4.0.516-universal.jar"
+        },
+        {
+          "name": "colorfulhearts forge",
+          "filename": "colorfulhearts-forge-1.20.1-4.3.16.jar",
+          "version": "",
+          "md5": "9e9be8a8c82350e43dfdd5d76101be50",
+          "size": 122868,
+          "url": "COLOQUE_A_URL_DO_colorfulhearts-forge-1.20.1-4.3.16.jar"
+        },
+        {
+          "name": "colorwheel forge",
+          "filename": "colorwheel-forge-1.2.1+mc1.20.1.jar",
+          "version": "",
+          "md5": "7dee13300a006b9abca868185ef4416d",
+          "size": 375232,
+          "url": "COLOQUE_A_URL_DO_colorwheel-forge-1.2.1+mc1.20.1.jar"
+        },
+        {
+          "name": "comforts forge",
+          "filename": "comforts-forge-6.4.0+1.20.1.jar",
+          "version": "",
+          "md5": "a88fcc168de1a0f9b2ae4e7cbe8a8408",
+          "size": 382083,
+          "url": "COLOQUE_A_URL_DO_comforts-forge-6.4.0+1.20.1.jar"
+        },
+        {
+          "name": "Compat AlexsMobs Naturalist.jar",
+          "filename": "Compat_AlexsMobs-Naturalist.jar",
+          "version": "",
+          "md5": "cbb19d04301fdddc802626967e8ce704",
+          "size": 107423,
+          "url": "COLOQUE_A_URL_DO_Compat_AlexsMobs-Naturalist.jar"
+        },
+        {
+          "name": "connectivity",
+          "filename": "connectivity-1.20.1-7.6.jar",
+          "version": "",
+          "md5": "59797700faa0a7b32e0db84b333805a3",
+          "size": 120598,
+          "url": "COLOQUE_A_URL_DO_connectivity-1.20.1-7.6.jar"
+        },
+        {
+          "name": "copycats",
+          "filename": "copycats-3.0.7+mc.1.20.1-forge.jar",
+          "version": "",
+          "md5": "47e13c8058d400e4a6316d00f451b29c",
+          "size": 1996097,
+          "url": "COLOQUE_A_URL_DO_copycats-3.0.7+mc.1.20.1-forge.jar"
+        },
+        {
+          "name": "corpse forge",
+          "filename": "corpse-forge-1.20.1-1.0.23.jar",
+          "version": "",
+          "md5": "a486f676f5e47e5846e31cb66cb5c16d",
+          "size": 245644,
+          "url": "COLOQUE_A_URL_DO_corpse-forge-1.20.1-1.0.23.jar"
+        },
+        {
+          "name": "corpsecurioscompat",
+          "filename": "corpsecurioscompat-1.20.1-Forge-3.1.3.jar",
+          "version": "",
+          "md5": "0bdc0b6b4a41df8dbfb9ab4621319547",
+          "size": 23655,
+          "url": "COLOQUE_A_URL_DO_corpsecurioscompat-1.20.1-Forge-3.1.3.jar"
+        },
+        {
+          "name": "CrashAssistant forge",
+          "filename": "CrashAssistant-forge-1.19-1.20.1-1.11.0.jar",
+          "version": "",
+          "md5": "52adbe56a82dee81c1f15d7a9b9cd5b4",
+          "size": 3022834,
+          "url": "COLOQUE_A_URL_DO_CrashAssistant-forge-1.19-1.20.1-1.11.0.jar"
+        },
+        {
+          "name": "create",
+          "filename": "create-1.20.1-6.0.8.jar",
+          "version": "",
+          "md5": "6ebc5c57638c1678359eac65b924c310",
+          "size": 19170905,
+          "url": "COLOQUE_A_URL_DO_create-1.20.1-6.0.8.jar"
+        },
+        {
+          "name": "createdeco",
+          "filename": "createdeco-2.0.3-1.20.1-forge.jar",
+          "version": "",
+          "md5": "3e0976b862fd087493c7356f623f5cd7",
+          "size": 3509013,
+          "url": "COLOQUE_A_URL_DO_createdeco-2.0.3-1.20.1-forge.jar"
+        },
+        {
+          "name": "create central kitchen",
+          "filename": "create_central_kitchen-1.20.1-for-create-6.0.6-1.4.3b.jar",
+          "version": "",
+          "md5": "cf941597532a7837327ee891b36f0596",
+          "size": 822499,
+          "url": "COLOQUE_A_URL_DO_create_central_kitchen-1.20.1-for-create-6.0.6-1.4.3b.jar"
+        },
+        {
+          "name": "create enchantment industry",
+          "filename": "create_enchantment_industry-1.3.3-for-create-6.0.6.jar",
+          "version": "",
+          "md5": "6f5f44bb2db0d2916a8ce3e60dae02cf",
+          "size": 488060,
+          "url": "COLOQUE_A_URL_DO_create_enchantment_industry-1.3.3-for-create-6.0.6.jar"
+        },
+        {
+          "name": "create misc and things  1.20.1",
+          "filename": "create_misc_and_things_ 1.20.1_4.0A.jar",
+          "version": "",
+          "md5": "fc477f3364e0e6096f8619f610c94e17",
+          "size": 1014347,
+          "url": "COLOQUE_A_URL_DO_create_misc_and_things_ 1.20.1_4.0A.jar"
+        },
+        {
+          "name": "create refined recipes",
+          "filename": "create_refined_recipes-1.0.1.b.jar",
+          "version": "",
+          "md5": "2d94417dd73f9fdd486962c4feb845ee",
+          "size": 121784,
+          "url": "COLOQUE_A_URL_DO_create_refined_recipes-1.0.1.b.jar"
+        },
+        {
+          "name": "create rustic structures",
+          "filename": "create_rustic_structures-1.0.0-forge-1.20.1.jar",
+          "version": "",
+          "md5": "15e211cec88f3d905c6fbd944a91f5dc",
+          "size": 709658,
+          "url": "COLOQUE_A_URL_DO_create_rustic_structures-1.0.0-forge-1.20.1.jar"
+        },
+        {
+          "name": "cristellib",
+          "filename": "cristellib-1.1.6-forge.jar",
+          "version": "",
+          "md5": "b52e8b225a34abab9300049c85f6855a",
+          "size": 431318,
+          "url": "COLOQUE_A_URL_DO_cristellib-1.1.6-forge.jar"
+        },
+        {
+          "name": "Croptopia",
+          "filename": "Croptopia-1.20.1-FORGE-3.0.4.jar",
+          "version": "",
+          "md5": "c7c4e6f0ff51507ad64544991dfc7454",
+          "size": 2099945,
+          "url": "COLOQUE_A_URL_DO_Croptopia-1.20.1-FORGE-3.0.4.jar"
+        },
+        {
+          "name": "croptopiadelight",
+          "filename": "croptopiadelight-1.3.2.jar",
+          "version": "",
+          "md5": "170a0f4ccd9967b32d0bc032529baa04",
+          "size": 86280,
+          "url": "COLOQUE_A_URL_DO_croptopiadelight-1.3.2.jar"
+        },
+        {
+          "name": "cupboard",
+          "filename": "cupboard-1.20.1-3.0.jar",
+          "version": "",
+          "md5": "2cd0fbf907e2441c4eb0e47064c53efb",
+          "size": 26053,
+          "url": "COLOQUE_A_URL_DO_cupboard-1.20.1-3.0.jar"
+        },
+        {
+          "name": "curios forge",
+          "filename": "curios-forge-5.14.1+1.20.1.jar",
+          "version": "",
+          "md5": "2fdcc97cbc66c4b2492b407c792e7159",
+          "size": 398066,
+          "url": "COLOQUE_A_URL_DO_curios-forge-5.14.1+1.20.1.jar"
+        },
+        {
+          "name": "DungeonsArise",
+          "filename": "DungeonsArise-1.20.x-2.1.58-release.jar",
+          "version": "",
+          "md5": "6ac48d0cf2ce763824f96f6d26963219",
+          "size": 8762342,
+          "url": "COLOQUE_A_URL_DO_DungeonsArise-1.20.x-2.1.58-release.jar"
+        },
+        {
+          "name": "embeddium",
+          "filename": "embeddium-0.3.31+mc1.20.1.jar",
+          "version": "",
+          "md5": "1dfb2ee49ce9ad5d484ff3eea0d628b7",
+          "size": 1320675,
+          "url": "COLOQUE_A_URL_DO_embeddium-0.3.31+mc1.20.1.jar"
+        },
+        {
+          "name": "EnderStorage",
+          "filename": "EnderStorage-1.20.1-2.11.0.188-universal.jar",
+          "version": "",
+          "md5": "8c6cc85f76b45b52d5feef1baa10f764",
+          "size": 246017,
+          "url": "COLOQUE_A_URL_DO_EnderStorage-1.20.1-2.11.0.188-universal.jar"
+        },
+        {
+          "name": "endrem forge",
+          "filename": "endrem_forge-5.3.3-R-1.20.1.jar",
+          "version": "",
+          "md5": "1de1aa97b353be8fe243f3a60cfc902e",
+          "size": 889634,
+          "url": "COLOQUE_A_URL_DO_endrem_forge-5.3.3-R-1.20.1.jar"
+        },
+        {
+          "name": "entityculling forge",
+          "filename": "entityculling-forge-1.9.5-mc1.20.1.jar",
+          "version": "",
+          "md5": "9de621a952ae3f73774bad91e6f4c718",
+          "size": 1569588,
+          "url": "COLOQUE_A_URL_DO_entityculling-forge-1.9.5-mc1.20.1.jar"
+        },
+        {
+          "name": "entity model features",
+          "filename": "entity_model_features_1.20.1-forge-3.0.12.jar",
+          "version": "",
+          "md5": "7dee8a8a4342d640fbff69d69ebed1f5",
+          "size": 683607,
+          "url": "COLOQUE_A_URL_DO_entity_model_features_1.20.1-forge-3.0.12.jar"
+        },
+        {
+          "name": "entity texture features",
+          "filename": "entity_texture_features_1.20.1-forge-7.0.9.jar",
+          "version": "",
+          "md5": "546224e019d93830f9bc9130ff0828f5",
+          "size": 926386,
+          "url": "COLOQUE_A_URL_DO_entity_texture_features_1.20.1-forge-7.0.9.jar"
+        },
+        {
+          "name": "EpheroLib",
+          "filename": "EpheroLib-1.20.1-FORGE-1.2.0.jar",
+          "version": "",
+          "md5": "f8b4d202f3fc4ffaf1bb8efd79f860bd",
+          "size": 756864,
+          "url": "COLOQUE_A_URL_DO_EpheroLib-1.20.1-FORGE-1.2.0.jar"
+        },
+        {
+          "name": "escalated",
+          "filename": "escalated-1.2.1-create.6.0.8-mc.1.20.1-forge.jar",
+          "version": "",
+          "md5": "f2394e0204d66f64a1ad9323ab85d07f",
+          "size": 701829,
+          "url": "COLOQUE_A_URL_DO_escalated-1.2.1-create.6.0.8-mc.1.20.1-forge.jar"
+        },
+        {
+          "name": "eureka",
+          "filename": "eureka-1201-1.6.1.jar",
+          "version": "",
+          "md5": "13ca38b0a2f7ab02954da00bbb80782e",
+          "size": 462497,
+          "url": "COLOQUE_A_URL_DO_eureka-1201-1.6.1.jar"
+        },
+        {
+          "name": "Explorify v1.6.4 f15",
+          "filename": "Explorify v1.6.4 f15-88.mod.jar",
+          "version": "",
+          "md5": "aef04ab27f59e69257a7c5278e0ef758",
+          "size": 951495,
+          "url": "COLOQUE_A_URL_DO_Explorify v1.6.4 f15-88.mod.jar"
+        },
+        {
+          "name": "FarmersDelight",
+          "filename": "FarmersDelight-1.20.1-1.2.10.jar",
+          "version": "",
+          "md5": "c429c87877d1a843209153a092e08c3f",
+          "size": 2955928,
+          "url": "COLOQUE_A_URL_DO_FarmersDelight-1.20.1-1.2.10.jar"
+        },
+        {
+          "name": "FarmersStructures",
+          "filename": "FarmersStructures-1.0.4-1.20.jar",
+          "version": "",
+          "md5": "b1c7ca164ccb5d38089f54fe3714a5b3",
+          "size": 425995,
+          "url": "COLOQUE_A_URL_DO_FarmersStructures-1.0.4-1.20.jar"
+        },
+        {
+          "name": "farsight",
+          "filename": "farsight-1.20.1-4.5.jar",
+          "version": "",
+          "md5": "92abe14e6a34c2b93e0074c0583cd25c",
+          "size": 441356,
+          "url": "COLOQUE_A_URL_DO_farsight-1.20.1-4.5.jar"
+        },
+        {
+          "name": "FastFurnace",
+          "filename": "FastFurnace-1.20.1-8.0.2.jar",
+          "version": "",
+          "md5": "48b8d2df29ea216a625928e29a6434da",
+          "size": 6170,
+          "url": "COLOQUE_A_URL_DO_FastFurnace-1.20.1-8.0.2.jar"
+        },
+        {
+          "name": "FastLeafDecay",
+          "filename": "FastLeafDecay-32.jar",
+          "version": "",
+          "md5": "20df3e3525622d6ea38a243be828ef38",
+          "size": 9835,
+          "url": "COLOQUE_A_URL_DO_FastLeafDecay-32.jar"
+        },
+        {
+          "name": "FastSuite",
+          "filename": "FastSuite-1.20.1-5.1.2.jar",
+          "version": "",
+          "md5": "efca8ff65bbf93e3a0f776998ee181e9",
+          "size": 26600,
+          "url": "COLOQUE_A_URL_DO_FastSuite-1.20.1-5.1.2.jar"
+        },
+        {
+          "name": "FastWorkbench",
+          "filename": "FastWorkbench-1.20.1-8.0.4.jar",
+          "version": "",
+          "md5": "2b55c4786cc726b0757689af28b97e7e",
+          "size": 28188,
+          "url": "COLOQUE_A_URL_DO_FastWorkbench-1.20.1-8.0.4.jar"
+        },
+        {
+          "name": "ferritecore",
+          "filename": "ferritecore-6.0.1-forge.jar",
+          "version": "",
+          "md5": "f52f538207a4829d7060550092ce2383",
+          "size": 123034,
+          "url": "COLOQUE_A_URL_DO_ferritecore-6.0.1-forge.jar"
+        },
+        {
+          "name": "ftb chunks forge",
+          "filename": "ftb-chunks-forge-2001.3.6.jar",
+          "version": "",
+          "md5": "64af750c0cbcadd4b27fb58236654814",
+          "size": 1158842,
+          "url": "COLOQUE_A_URL_DO_ftb-chunks-forge-2001.3.6.jar"
+        },
+        {
+          "name": "ftb library forge",
+          "filename": "ftb-library-forge-2001.2.12.jar",
+          "version": "",
+          "md5": "8bbd067159587d80f1c5286ea52e567b",
+          "size": 780523,
+          "url": "COLOQUE_A_URL_DO_ftb-library-forge-2001.2.12.jar"
+        },
+        {
+          "name": "ftb teams forge",
+          "filename": "ftb-teams-forge-2001.3.2.jar",
+          "version": "",
+          "md5": "1c547d6f1b22f461f84c5fb79067b0ec",
+          "size": 252579,
+          "url": "COLOQUE_A_URL_DO_ftb-teams-forge-2001.3.2.jar"
+        },
+        {
+          "name": "fusion",
+          "filename": "fusion-1.2.12-forge-mc1.20.1.jar",
+          "version": "",
+          "md5": "aad8a16b48cd54cd75e34bf4f40eec1b",
+          "size": 544586,
+          "url": "COLOQUE_A_URL_DO_fusion-1.2.12-forge-mc1.20.1.jar"
+        },
+        {
+          "name": "geckolib forge",
+          "filename": "geckolib-forge-1.20.1-4.8.3.jar",
+          "version": "",
+          "md5": "33b0f8fe0a8d59fcf9d4e222741ecba7",
+          "size": 1039046,
+          "url": "COLOQUE_A_URL_DO_geckolib-forge-1.20.1-4.8.3.jar"
+        },
+        {
+          "name": "GlitchCore forge",
+          "filename": "GlitchCore-forge-1.20.1-0.0.1.1.jar",
+          "version": "",
+          "md5": "6d24b09db12acdab40437a1929259352",
+          "size": 87550,
+          "url": "COLOQUE_A_URL_DO_GlitchCore-forge-1.20.1-0.0.1.1.jar"
+        },
+        {
+          "name": "gpumemleakfix",
+          "filename": "gpumemleakfix-1.20.1-1.8.jar",
+          "version": "",
+          "md5": "e5028e9da74761f26c00c546c8ebdc4d",
+          "size": 7997,
+          "url": "COLOQUE_A_URL_DO_gpumemleakfix-1.20.1-1.8.jar"
+        },
+        {
+          "name": "guideme",
+          "filename": "guideme-20.1.14.jar",
+          "version": "",
+          "md5": "6425ddca1593d7f73c7160e54333cfef",
+          "size": 9413204,
+          "url": "COLOQUE_A_URL_DO_guideme-20.1.14.jar"
+        },
+        {
+          "name": "Iceberg",
+          "filename": "Iceberg-1.20.1-forge-1.1.25.jar",
+          "version": "",
+          "md5": "cda8af806d0de012f5c7012ea51c155f",
+          "size": 134551,
+          "url": "COLOQUE_A_URL_DO_Iceberg-1.20.1-forge-1.1.25.jar"
+        },
+        {
+          "name": "ImmediatelyFast Forge",
+          "filename": "ImmediatelyFast-Forge-1.5.4+1.20.4.jar",
+          "version": "",
+          "md5": "8fb21bb328cc322c6d9749eff087509f",
+          "size": 538992,
+          "url": "COLOQUE_A_URL_DO_ImmediatelyFast-Forge-1.5.4+1.20.4.jar"
+        },
+        {
+          "name": "immersive aircraft",
+          "filename": "immersive_aircraft-1.4.0+1.20.1-forge.jar",
+          "version": "",
+          "md5": "f49ff767f611a95f9bd29a0e9977d9d5",
+          "size": 2428368,
+          "url": "COLOQUE_A_URL_DO_immersive_aircraft-1.4.0+1.20.1-forge.jar"
+        },
+        {
+          "name": "interiors",
+          "filename": "interiors-1.20.1-forge-0.6.0.jar",
+          "version": "",
+          "md5": "ce68bdf83822db82b2e258b49ee3d074",
+          "size": 489265,
+          "url": "COLOQUE_A_URL_DO_interiors-1.20.1-forge-0.6.0.jar"
+        },
+        {
+          "name": "irons spellbooks",
+          "filename": "irons_spellbooks-1.20.1-3.15.4.jar",
+          "version": "",
+          "md5": "2b687c5e1cf5cf36e0ec318d9c4056e2",
+          "size": 15144197,
+          "url": "COLOQUE_A_URL_DO_irons_spellbooks-1.20.1-3.15.4.jar"
+        },
+        {
+          "name": "Jade",
+          "filename": "Jade-1.20.1-Forge-11.13.2.jar",
+          "version": "",
+          "md5": "7c349670f77fd64b9e9854c4a8d82fcc",
+          "size": 552486,
+          "url": "COLOQUE_A_URL_DO_Jade-1.20.1-Forge-11.13.2.jar"
+        },
+        {
+          "name": "JadeAddons",
+          "filename": "JadeAddons-1.20.1-Forge-5.5.0.jar",
+          "version": "",
+          "md5": "3e2fa5d8b2ec994ba416ec4f84d5ea60",
+          "size": 91771,
+          "url": "COLOQUE_A_URL_DO_JadeAddons-1.20.1-Forge-5.5.0.jar"
+        },
+        {
+          "name": "jei",
+          "filename": "jei-1.20.1-forge-15.20.0.129.jar",
+          "version": "",
+          "md5": "a5192227a15e0fe0e367828b32c1f472",
+          "size": 1409642,
+          "url": "COLOQUE_A_URL_DO_jei-1.20.1-forge-15.20.0.129.jar"
+        },
+        {
+          "name": "jmi forge",
+          "filename": "jmi-forge-1.20.1-0.14-48.jar",
+          "version": "",
+          "md5": "9ca3febdf066b2dd900ab6c0c59852e1",
+          "size": 69022,
+          "url": "COLOQUE_A_URL_DO_jmi-forge-1.20.1-0.14-48.jar"
+        },
+        {
+          "name": "journeymap",
+          "filename": "journeymap-1.20.1-5.10.3-forge.jar",
+          "version": "",
+          "md5": "2181bd6b7161f06726560b9382235611",
+          "size": 7160405,
+          "url": "COLOQUE_A_URL_DO_journeymap-1.20.1-5.10.3-forge.jar"
+        },
+        {
+          "name": "JustEnoughResources",
+          "filename": "JustEnoughResources-1.20.1-1.4.0.247.jar",
+          "version": "",
+          "md5": "bd7166a2e9361ef5e8b616edfa2028f4",
+          "size": 276231,
+          "url": "COLOQUE_A_URL_DO_JustEnoughResources-1.20.1-1.4.0.247.jar"
+        },
+        {
+          "name": "kotlinforforge",
+          "filename": "kotlinforforge-4.12.0-all.jar",
+          "version": "",
+          "md5": "d6a40dede74edbe646b34a1bafd53b4d",
+          "size": 7442998,
+          "url": "COLOQUE_A_URL_DO_kotlinforforge-4.12.0-all.jar"
+        },
+        {
+          "name": "legendarycreatures",
+          "filename": "legendarycreatures-1.20.1-1.1.1.4.jar",
+          "version": "",
+          "md5": "7621ee18ff0cb076fa43a7074ccb6e3f",
+          "size": 3704761,
+          "url": "COLOQUE_A_URL_DO_legendarycreatures-1.20.1-1.1.1.4.jar"
+        },
+        {
+          "name": "legendarymonsters",
+          "filename": "legendarymonsters-2.0.6 MC 1.20.1.jar",
+          "version": "",
+          "md5": "0814219aa7e96f1797ae03c7a12596e3",
+          "size": 32223179,
+          "url": "COLOQUE_A_URL_DO_legendarymonsters-2.0.6 MC 1.20.1.jar"
+        },
+        {
+          "name": "legendarytabs",
+          "filename": "legendarytabs-1.20.1-1.1.3.1.jar",
+          "version": "",
+          "md5": "62a305a70fa7836b8e1226529bbaeebd",
+          "size": 78134,
+          "url": "COLOQUE_A_URL_DO_legendarytabs-1.20.1-1.1.3.1.jar"
+        },
+        {
+          "name": "LegendaryTooltips",
+          "filename": "LegendaryTooltips-1.20.1-forge-1.4.5.jar",
+          "version": "",
+          "md5": "18c8e50bb98e24d86aa96a8b25dc6091",
+          "size": 55258,
+          "url": "COLOQUE_A_URL_DO_LegendaryTooltips-1.20.1-forge-1.4.5.jar"
+        },
+        {
+          "name": "letmedespawn",
+          "filename": "letmedespawn-1.20.x-forge-1.5.0.jar",
+          "version": "",
+          "md5": "0ff799ece663ddafab61ad32704fc51c",
+          "size": 14789,
+          "url": "COLOQUE_A_URL_DO_letmedespawn-1.20.x-forge-1.5.0.jar"
+        },
+        {
+          "name": "lionfishapi",
+          "filename": "lionfishapi-2.4-Fix.jar",
+          "version": "",
+          "md5": "81efd7c198c3c7036c77c79cae764ed4",
+          "size": 162767,
+          "url": "COLOQUE_A_URL_DO_lionfishapi-2.4-Fix.jar"
+        },
+        {
+          "name": "logprot",
+          "filename": "logprot-1.20.1-3.5.jar",
+          "version": "",
+          "md5": "b3141680aa07b7caeede701a2c6ce509",
+          "size": 14015,
+          "url": "COLOQUE_A_URL_DO_logprot-1.20.1-3.5.jar"
+        },
+        {
+          "name": "lootr forge",
+          "filename": "lootr-forge-1.20-0.7.35.94.jar",
+          "version": "",
+          "md5": "56dd6966de4ba641cf00ef5b9ce8d2d7",
+          "size": 463485,
+          "url": "COLOQUE_A_URL_DO_lootr-forge-1.20-0.7.35.94.jar"
+        },
+        {
+          "name": "L Enders Cataclysm",
+          "filename": "L_Enders_Cataclysm-3.16.jar",
+          "version": "",
+          "md5": "de747fb259b761f7b872654516fa27b3",
+          "size": 127993805,
+          "url": "COLOQUE_A_URL_DO_L_Enders_Cataclysm-3.16.jar"
+        },
+        {
+          "name": "Mantle",
+          "filename": "Mantle-1.20.1-1.11.104.jar",
+          "version": "",
+          "md5": "7d5d50ac6c3d8791e494dc5173297d02",
+          "size": 1625005,
+          "url": "COLOQUE_A_URL_DO_Mantle-1.20.1-1.11.104.jar"
+        },
+        {
+          "name": "man of many planes",
+          "filename": "man_of_many_planes-0.2.0+1.20.1-forge.jar",
+          "version": "",
+          "md5": "513ceaf49ede4812691e6e80fb4cbdee",
+          "size": 309137,
+          "url": "COLOQUE_A_URL_DO_man_of_many_planes-0.2.0+1.20.1-forge.jar"
+        },
+        {
+          "name": "MaxHealthFix Forge",
+          "filename": "MaxHealthFix-Forge-1.20.1-12.0.4.jar",
+          "version": "",
+          "md5": "3f0c51e3a1a2405c45bca7303383c50b",
+          "size": 10788,
+          "url": "COLOQUE_A_URL_DO_MaxHealthFix-Forge-1.20.1-12.0.4.jar"
+        },
+        {
+          "name": "mcw bridges",
+          "filename": "mcw-bridges-3.1.2-mc1.20.1forge.jar",
+          "version": "",
+          "md5": "78af63fce71f5739ed3595012880d502",
+          "size": 693579,
+          "url": "COLOQUE_A_URL_DO_mcw-bridges-3.1.2-mc1.20.1forge.jar"
+        },
+        {
+          "name": "mcw doors",
+          "filename": "mcw-doors-1.1.5-mc1.20.1forge.jar",
+          "version": "",
+          "md5": "6a8504f9f2a9dd1ebbf0cac848ad2a25",
+          "size": 1246753,
+          "url": "COLOQUE_A_URL_DO_mcw-doors-1.1.5-mc1.20.1forge.jar"
+        },
+        {
+          "name": "mcw furniture",
+          "filename": "mcw-furniture-3.4.1-mc1.20.1forge.jar",
+          "version": "",
+          "md5": "cbc4466cb23ec23b8ba800aa022f567a",
+          "size": 2174615,
+          "url": "COLOQUE_A_URL_DO_mcw-furniture-3.4.1-mc1.20.1forge.jar"
+        },
+        {
+          "name": "mcw lights",
+          "filename": "mcw-lights-1.1.5-mc1.20.1forge.jar",
+          "version": "",
+          "md5": "4d8aedce71e2963976d710ac1798b82b",
+          "size": 547779,
+          "url": "COLOQUE_A_URL_DO_mcw-lights-1.1.5-mc1.20.1forge.jar"
+        },
+        {
+          "name": "mcw mcwfences",
+          "filename": "mcw-mcwfences-1.2.1-mc1.20.1forge.jar",
+          "version": "",
+          "md5": "33f30e1ad2474fe8836e85271799ecb7",
+          "size": 708634,
+          "url": "COLOQUE_A_URL_DO_mcw-mcwfences-1.2.1-mc1.20.1forge.jar"
+        },
+        {
+          "name": "mcw mcwpaths",
+          "filename": "mcw-mcwpaths-1.1.1-mc1.20.1forge.jar",
+          "version": "",
+          "md5": "81897b45ac45c6054121482879c7a882",
+          "size": 812573,
+          "url": "COLOQUE_A_URL_DO_mcw-mcwpaths-1.1.1-mc1.20.1forge.jar"
+        },
+        {
+          "name": "mcw mcwstairs",
+          "filename": "mcw-mcwstairs-1.0.2-mc1.20.1forge.jar",
+          "version": "",
+          "md5": "40293c4a7b2d02cf4ed08b58f8123371",
+          "size": 554055,
+          "url": "COLOQUE_A_URL_DO_mcw-mcwstairs-1.0.2-mc1.20.1forge.jar"
+        },
+        {
+          "name": "mcw mcwwindows",
+          "filename": "mcw-mcwwindows-2.4.2-mc1.20.1forge.jar",
+          "version": "",
+          "md5": "04b5e1a31c4b76b9fdbf8e111ef9ae57",
+          "size": 1320692,
+          "url": "COLOQUE_A_URL_DO_mcw-mcwwindows-2.4.2-mc1.20.1forge.jar"
+        },
+        {
+          "name": "mcw roofs",
+          "filename": "mcw-roofs-2.3.2-mc1.20.1forge.jar",
+          "version": "",
+          "md5": "320ab9ca3f66d228cbf2ad6728ffa22d",
+          "size": 1864023,
+          "url": "COLOQUE_A_URL_DO_mcw-roofs-2.3.2-mc1.20.1forge.jar"
+        },
+        {
+          "name": "mcw trapdoors",
+          "filename": "mcw-trapdoors-1.1.5-mc1.20.1forge.jar",
+          "version": "",
+          "md5": "59e11a2be482c75aa13bcfaace597594",
+          "size": 604510,
+          "url": "COLOQUE_A_URL_DO_mcw-trapdoors-1.1.5-mc1.20.1forge.jar"
+        },
+        {
+          "name": "mcwbiomesoplenty",
+          "filename": "mcwbiomesoplenty-1.20.1-1.5.jar",
+          "version": "",
+          "md5": "ffaf90821584810a330412638aa6e7c0",
+          "size": 7325010,
+          "url": "COLOQUE_A_URL_DO_mcwbiomesoplenty-1.20.1-1.5.jar"
+        },
+        {
+          "name": "mcwregionsunexplored",
+          "filename": "mcwregionsunexplored-1.20.1-1.5.jar",
+          "version": "",
+          "md5": "f40c3f4b7f628af6590c88d27ff3b3a7",
+          "size": 12570686,
+          "url": "COLOQUE_A_URL_DO_mcwregionsunexplored-1.20.1-1.5.jar"
+        },
+        {
+          "name": "megacells forge",
+          "filename": "megacells-forge-2.4.6-1.20.1.jar",
+          "version": "",
+          "md5": "c2fbcaaa3c810162602ad709ad31a792",
+          "size": 387196,
+          "url": "COLOQUE_A_URL_DO_megacells-forge-2.4.6-1.20.1.jar"
+        },
+        {
+          "name": "memoryleakfix forge",
+          "filename": "memoryleakfix-forge-1.17+-1.1.5.jar",
+          "version": "",
+          "md5": "5dd9149414ca375ceab146242c6e84ab",
+          "size": 227925,
+          "url": "COLOQUE_A_URL_DO_memoryleakfix-forge-1.17+-1.1.5.jar"
+        },
+        {
+          "name": "merequester forge",
+          "filename": "merequester-forge-1.20.1-1.1.5.jar",
+          "version": "",
+          "md5": "c5d4241640b6ed5755915003fda4d2af",
+          "size": 171854,
+          "url": "COLOQUE_A_URL_DO_merequester-forge-1.20.1-1.1.5.jar"
+        },
+        {
+          "name": "mes",
+          "filename": "mes-1.4.6-1.20.jar",
+          "version": "",
+          "md5": "7ed4ed710c12c6dffe5ea976d08ec406",
+          "size": 1140667,
+          "url": "COLOQUE_A_URL_DO_mes-1.4.6-1.20.jar"
+        },
+        {
+          "name": "modernfix forge",
+          "filename": "modernfix-forge-5.26.2+mc1.20.1.jar",
+          "version": "",
+          "md5": "61332114c9c317080faaf35f8183d67b",
+          "size": 826829,
+          "url": "COLOQUE_A_URL_DO_modernfix-forge-5.26.2+mc1.20.1.jar"
+        },
+        {
+          "name": "MoogsNetherStructures",
+          "filename": "MoogsNetherStructures-1.20-2.0.2.jar",
+          "version": "",
+          "md5": "42ed06238b2f794ef62b497ed4c85d2d",
+          "size": 1323432,
+          "url": "COLOQUE_A_URL_DO_MoogsNetherStructures-1.20-2.0.2.jar"
+        },
+        {
+          "name": "MoogsVoyagerStructures",
+          "filename": "MoogsVoyagerStructures-1.20-5.0.4.jar",
+          "version": "",
+          "md5": "ed096d67348eea99fea71a983e97dd05",
+          "size": 2661209,
+          "url": "COLOQUE_A_URL_DO_MoogsVoyagerStructures-1.20-5.0.4.jar"
+        },
+        {
+          "name": "moogs structure lib",
+          "filename": "moogs_structure_lib-1.1.0-1.20-1.20.4-forge.jar",
+          "version": "",
+          "md5": "5a11ae3b12f4a85f3a7676fc89fe8030",
+          "size": 259848,
+          "url": "COLOQUE_A_URL_DO_moogs_structure_lib-1.1.0-1.20-1.20.4-forge.jar"
+        },
+        {
+          "name": "moonlight",
+          "filename": "moonlight-1.20-2.16.28-forge.jar",
+          "version": "",
+          "md5": "16b9f89e07b2c567c610881f784cf6d1",
+          "size": 1393921,
+          "url": "COLOQUE_A_URL_DO_moonlight-1.20-2.16.28-forge.jar"
+        },
+        {
+          "name": "morerelics",
+          "filename": "morerelics-1.7.0-1.20.1.jar",
+          "version": "",
+          "md5": "13b2834a00fa0b987ce79ce4fb124041",
+          "size": 753263,
+          "url": "COLOQUE_A_URL_DO_morerelics-1.7.0-1.20.1.jar"
+        },
+        {
+          "name": "MouseTweaks forge mc1.20.1",
+          "filename": "MouseTweaks-forge-mc1.20.1-2.25.1.jar",
+          "version": "",
+          "md5": "ce4b5bbb9ef6a7905c458ab599ef4cb2",
+          "size": 76237,
+          "url": "COLOQUE_A_URL_DO_MouseTweaks-forge-mc1.20.1-2.25.1.jar"
+        },
+        {
+          "name": "mowziesmobs",
+          "filename": "mowziesmobs-1.7.3.jar",
+          "version": "",
+          "md5": "ae03fbc5568adbf84e49806af92844cd",
+          "size": 35239406,
+          "url": "COLOQUE_A_URL_DO_mowziesmobs-1.7.3.jar"
+        },
+        {
+          "name": "mythsandlegends",
+          "filename": "mythsandlegends-0.0.8.7.jar",
+          "version": "",
+          "md5": "a26cf70f6074c05c837e61910984dc85",
+          "size": 4583996,
+          "url": "COLOQUE_A_URL_DO_mythsandlegends-0.0.8.7.jar"
+        },
+        {
+          "name": "netherportalfix forge",
+          "filename": "netherportalfix-forge-1.20-13.0.1.jar",
+          "version": "",
+          "md5": "f5efd2c259b0538da0f62bb2d9dc2106",
+          "size": 217831,
+          "url": "COLOQUE_A_URL_DO_netherportalfix-forge-1.20-13.0.1.jar"
+        },
+        {
+          "name": "OctoLib FORGE",
+          "filename": "OctoLib-FORGE-0.5.0.1+1.20.1.jar",
+          "version": "",
+          "md5": "6b2fd012966b13a96ce4f68ae42eab8c",
+          "size": 424035,
+          "url": "COLOQUE_A_URL_DO_OctoLib-FORGE-0.5.0.1+1.20.1.jar"
+        },
+        {
+          "name": "oculus mc1.20.1",
+          "filename": "oculus-mc1.20.1-1.8.0.jar",
+          "version": "",
+          "md5": "1dd891634ac21591b5a692471f112572",
+          "size": 2851119,
+          "url": "COLOQUE_A_URL_DO_oculus-mc1.20.1-1.8.0.jar"
+        },
+        {
+          "name": "Placebo",
+          "filename": "Placebo-1.20.1-8.6.3.jar",
+          "version": "",
+          "md5": "13133ab9989e8474931cd7a86bd19cc5",
+          "size": 282474,
+          "url": "COLOQUE_A_URL_DO_Placebo-1.20.1-8.6.3.jar"
+        },
+        {
+          "name": "Platform forge",
+          "filename": "Platform-forge-1.20.1-1.2.11.6.2.jar",
+          "version": "",
+          "md5": "84089d0f4626632efb8b6b6043f22dab",
+          "size": 492587,
+          "url": "COLOQUE_A_URL_DO_Platform-forge-1.20.1-1.2.11.6.2.jar"
+        },
+        {
+          "name": "player animation lib forge",
+          "filename": "player-animation-lib-forge-1.0.2-rc1+1.20.jar",
+          "version": "",
+          "md5": "46f8554181d4d240075ea4919d01fd01",
+          "size": 181437,
+          "url": "COLOQUE_A_URL_DO_player-animation-lib-forge-1.0.2-rc1+1.20.jar"
+        },
+        {
+          "name": "Prism",
+          "filename": "Prism-1.20.1-forge-1.0.5.jar",
+          "version": "",
+          "md5": "de0e319e29e813f407314b33739f7eb8",
+          "size": 52205,
+          "url": "COLOQUE_A_URL_DO_Prism-1.20.1-forge-1.0.5.jar"
+        },
+        {
+          "name": "raccompat",
+          "filename": "raccompat-1.20.1-0.1.3.jar",
+          "version": "",
+          "md5": "f638b42df11bb68456774c25775102ee",
+          "size": 119631,
+          "url": "COLOQUE_A_URL_DO_raccompat-1.20.1-0.1.3.jar"
+        },
+        {
+          "name": "ramcompat",
+          "filename": "ramcompat-1.20.1-0.1.4.jar",
+          "version": "",
+          "md5": "d54a4ddcedb140bf3fd024cf28360b9e",
+          "size": 43635,
+          "url": "COLOQUE_A_URL_DO_ramcompat-1.20.1-0.1.4.jar"
+        },
+        {
+          "name": "rarcompat",
+          "filename": "rarcompat-1.20.1-0.5.jar",
+          "version": "",
+          "md5": "6d7958b048c0f25afc179c769868990f",
+          "size": 409926,
+          "url": "COLOQUE_A_URL_DO_rarcompat-1.20.1-0.5.jar"
+        },
+        {
+          "name": "rechiseled",
+          "filename": "rechiseled-1.2.4-forge-mc1.20.1.jar",
+          "version": "",
+          "md5": "8ad92a457e29f0b18e037bdd9519aa4e",
+          "size": 11860511,
+          "url": "COLOQUE_A_URL_DO_rechiseled-1.2.4-forge-mc1.20.1.jar"
+        },
+        {
+          "name": "rechiseledcreate",
+          "filename": "rechiseledcreate-1.1.0-forge-mc1.20.jar",
+          "version": "",
+          "md5": "8c3973442cc48fdfb7338281bada43b8",
+          "size": 1005120,
+          "url": "COLOQUE_A_URL_DO_rechiseledcreate-1.1.0-forge-mc1.20.jar"
+        },
+        {
+          "name": "refinedstorage",
+          "filename": "refinedstorage-1.12.4.jar",
+          "version": "",
+          "md5": "aa6c64a4912eaef8478c5820fe03bbae",
+          "size": 3300191,
+          "url": "COLOQUE_A_URL_DO_refinedstorage-1.12.4.jar"
+        },
+        {
+          "name": "refinedstorageaddons",
+          "filename": "refinedstorageaddons-0.10.0.jar",
+          "version": "",
+          "md5": "0f37070308d5b2c022cdef50574290d8",
+          "size": 33771,
+          "url": "COLOQUE_A_URL_DO_refinedstorageaddons-0.10.0.jar"
+        },
+        {
+          "name": "RegionsUnexploredForge",
+          "filename": "RegionsUnexploredForge-0.5.6+1.20.1.jar",
+          "version": "",
+          "md5": "82c3073f606044e7b56d432d324ca480",
+          "size": 5726781,
+          "url": "COLOQUE_A_URL_DO_RegionsUnexploredForge-0.5.6+1.20.1.jar"
+        },
+        {
+          "name": "relics",
+          "filename": "relics-1.20.1-0.8.0.13.jar",
+          "version": "",
+          "md5": "8e8a8beb1ac0776448dfbcec179734a1",
+          "size": 1521089,
+          "url": "COLOQUE_A_URL_DO_relics-1.20.1-0.8.0.13.jar"
+        },
+        {
+          "name": "reliquary",
+          "filename": "reliquary-1.20.1-2.0.55.1326.jar",
+          "version": "",
+          "md5": "7922eb58e9d1dca95afa06128d5e8831",
+          "size": 2215397,
+          "url": "COLOQUE_A_URL_DO_reliquary-1.20.1-2.0.55.1326.jar"
+        },
+        {
+          "name": "rsrequestify",
+          "filename": "rsrequestify-1.20.1-2.3.3.jar",
+          "version": "",
+          "md5": "f7fe974fd9c21e4bd3a8448dbc174bb8",
+          "size": 62933,
+          "url": "COLOQUE_A_URL_DO_rsrequestify-1.20.1-2.3.3.jar"
+        },
+        {
+          "name": "saturn mc1.20.1",
+          "filename": "saturn-mc1.20.1-0.1.3.jar",
+          "version": "",
+          "md5": "56a9a1cc126425b04acc5f8bd7ed67f1",
+          "size": 92319,
+          "url": "COLOQUE_A_URL_DO_saturn-mc1.20.1-0.1.3.jar"
+        },
+        {
+          "name": "Searchables forge",
+          "filename": "Searchables-forge-1.20.1-1.0.3.jar",
+          "version": "",
+          "md5": "9f5418e9c08c18a375ef42fada4bcef2",
+          "size": 77732,
+          "url": "COLOQUE_A_URL_DO_Searchables-forge-1.20.1-1.0.3.jar"
+        },
+        {
+          "name": "sliceanddice forge",
+          "filename": "sliceanddice-forge-3.6.0.jar",
+          "version": "",
+          "md5": "d32f1794294f473f0a63296cac72802d",
+          "size": 588268,
+          "url": "COLOQUE_A_URL_DO_sliceanddice-forge-3.6.0.jar"
+        },
+        {
+          "name": "smarterfarmers",
+          "filename": "smarterfarmers-1.20-2.1.2.jar",
+          "version": "",
+          "md5": "b04ef82625bceef8b7b04f554cf965d9",
+          "size": 223368,
+          "url": "COLOQUE_A_URL_DO_smarterfarmers-1.20-2.1.2.jar"
+        },
+        {
+          "name": "sodiumextras forge",
+          "filename": "sodiumextras-forge-1.0.7-1.20.1.jar",
+          "version": "",
+          "md5": "823adea3bcfd64dbdbaec46950cf4108",
+          "size": 438540,
+          "url": "COLOQUE_A_URL_DO_sodiumextras-forge-1.0.7-1.20.1.jar"
+        },
+        {
+          "name": "sodiumoptionsapi forge",
+          "filename": "sodiumoptionsapi-forge-1.0.10-1.20.1.jar",
+          "version": "",
+          "md5": "75807590ae2648ecdeb855705868ce59",
+          "size": 443978,
+          "url": "COLOQUE_A_URL_DO_sodiumoptionsapi-forge-1.0.10-1.20.1.jar"
+        },
+        {
+          "name": "solcarrot",
+          "filename": "solcarrot-1.20.1-1.15.1.jar",
+          "version": "",
+          "md5": "3b143c8d252b51221b5e85724c00171c",
+          "size": 104185,
+          "url": "COLOQUE_A_URL_DO_solcarrot-1.20.1-1.15.1.jar"
+        },
+        {
+          "name": "sophisticatedbackpacks",
+          "filename": "sophisticatedbackpacks-1.20.1-3.24.25.1566.jar",
+          "version": "",
+          "md5": "7be9853cd8133e6e84e7d6948967604b",
+          "size": 990023,
+          "url": "COLOQUE_A_URL_DO_sophisticatedbackpacks-1.20.1-3.24.25.1566.jar"
+        },
+        {
+          "name": "sophisticatedcore",
+          "filename": "sophisticatedcore-1.20.1-1.3.6.1514.jar",
+          "version": "",
+          "md5": "5ad1749e503d8a980beffed1ee91f6e2",
+          "size": 1419375,
+          "url": "COLOQUE_A_URL_DO_sophisticatedcore-1.20.1-1.3.6.1514.jar"
+        },
+        {
+          "name": "sophisticatedstorage",
+          "filename": "sophisticatedstorage-1.20.1-1.4.26.1506.jar",
+          "version": "",
+          "md5": "dd5645eadfd48d2c4f9883a27a2ce13b",
+          "size": 1674387,
+          "url": "COLOQUE_A_URL_DO_sophisticatedstorage-1.20.1-1.4.26.1506.jar"
+        },
+        {
+          "name": "sophisticatedstoragecreateintegration",
+          "filename": "sophisticatedstoragecreateintegration-1.20.1-0.1.15.63.jar",
+          "version": "",
+          "md5": "0145afade683ea99a9a236818cf22300",
+          "size": 127365,
+          "url": "COLOQUE_A_URL_DO_sophisticatedstoragecreateintegration-1.20.1-0.1.15.63.jar"
+        },
+        {
+          "name": "sparsestructures forge",
+          "filename": "sparsestructures-forge-1.20.1-3.0.jar",
+          "version": "",
+          "md5": "bf7fda6c7026dc2ef085fac7cebab3e1",
+          "size": 121055,
+          "url": "COLOQUE_A_URL_DO_sparsestructures-forge-1.20.1-3.0.jar"
+        },
+        {
+          "name": "starlight",
+          "filename": "starlight-1.1.2+forge.1cda73c.jar",
+          "version": "",
+          "md5": "da99a054428fb62342b6767b993c4c8d",
+          "size": 110583,
+          "url": "COLOQUE_A_URL_DO_starlight-1.1.2+forge.1cda73c.jar"
+        },
+        {
+          "name": "Steam Rails",
+          "filename": "Steam_Rails-1.7.1+forge-mc1.20.1.jar",
+          "version": "",
+          "md5": "452f34740e45908c7da25ac73f2892ee",
+          "size": 16748161,
+          "url": "COLOQUE_A_URL_DO_Steam_Rails-1.7.1+forge-mc1.20.1.jar"
+        },
+        {
+          "name": "StorageDrawers forge",
+          "filename": "StorageDrawers-forge-1.20.1-12.14.3.jar",
+          "version": "",
+          "md5": "b028423a78cf22d461e00ac681b59eb2",
+          "size": 1143623,
+          "url": "COLOQUE_A_URL_DO_StorageDrawers-forge-1.20.1-12.14.3.jar"
+        },
+        {
+          "name": "Structory",
+          "filename": "Structory_1.20.x_v1.3.5.jar",
+          "version": "",
+          "md5": "2cd1485d84e6ba105677ce8423ff83ed",
+          "size": 1286460,
+          "url": "COLOQUE_A_URL_DO_Structory_1.20.x_v1.3.5.jar"
+        },
+        {
+          "name": "structureessentials",
+          "filename": "structureessentials-1.20.1-4.8.jar",
+          "version": "",
+          "md5": "6406a36779802a9de3c993a09b9e9126",
+          "size": 63134,
+          "url": "COLOQUE_A_URL_DO_structureessentials-1.20.1-4.8.jar"
+        },
+        {
+          "name": "supermartijn642configlib",
+          "filename": "supermartijn642configlib-1.1.8-forge-mc1.20.jar",
+          "version": "",
+          "md5": "cbece61946d4e059e90806c19dd66082",
+          "size": 206584,
+          "url": "COLOQUE_A_URL_DO_supermartijn642configlib-1.1.8-forge-mc1.20.jar"
+        },
+        {
+          "name": "supermartijn642corelib",
+          "filename": "supermartijn642corelib-1.1.20-forge-mc1.20.1.jar",
+          "version": "",
+          "md5": "4bb3356578ee99224b850322739115b1",
+          "size": 555116,
+          "url": "COLOQUE_A_URL_DO_supermartijn642corelib-1.1.20-forge-mc1.20.1.jar"
+        },
+        {
+          "name": "TConstruct",
+          "filename": "TConstruct-1.20.1-3.11.2.166.jar",
+          "version": "",
+          "md5": "812aad66dfecc0832ea4569cd3b1de5a",
+          "size": 21572031,
+          "url": "COLOQUE_A_URL_DO_TConstruct-1.20.1-3.11.2.166.jar"
+        },
+        {
+          "name": "TerraBlender forge",
+          "filename": "TerraBlender-forge-1.20.1-3.0.1.10.jar",
+          "version": "",
+          "md5": "9d8e305b95ae5a8f7b446d6346324267",
+          "size": 107532,
+          "url": "COLOQUE_A_URL_DO_TerraBlender-forge-1.20.1-3.0.1.10.jar"
+        },
+        {
+          "name": "Terralith",
+          "filename": "Terralith_1.20.x_v2.5.4.jar",
+          "version": "",
+          "md5": "b143cfd648086c68d7f47a86b8994ee3",
+          "size": 3156901,
+          "url": "COLOQUE_A_URL_DO_Terralith_1.20.x_v2.5.4.jar"
+        },
+        {
+          "name": "tfmg",
+          "filename": "tfmg-1.0.2f.jar",
+          "version": "",
+          "md5": "fd033fc4132f7cd26a0f30e6181d8fde",
+          "size": 5343749,
+          "url": "COLOQUE_A_URL_DO_tfmg-1.0.2f.jar"
+        },
+        {
+          "name": "Towns and Towers",
+          "filename": "Towns-and-Towers-1.12-Fabric+Forge.jar",
+          "version": "",
+          "md5": "237a2186d2482856f67c638c06489fb8",
+          "size": 2864275,
+          "url": "COLOQUE_A_URL_DO_Towns-and-Towers-1.12-Fabric+Forge.jar"
+        },
+        {
+          "name": "valkyrienskies",
+          "filename": "valkyrienskies-120-2.4.10.jar",
+          "version": "",
+          "md5": "5752b605b01a53fdb833cc5725a179d0",
+          "size": 27249986,
+          "url": "COLOQUE_A_URL_DO_valkyrienskies-120-2.4.10.jar"
+        },
+        {
+          "name": "VanillaBackport forge",
+          "filename": "VanillaBackport-forge-1.20.1-1.1.5.4.2.jar",
+          "version": "",
+          "md5": "e3d2a11fd3768beb4b1e13e158b2d8b8",
+          "size": 28385661,
+          "url": "COLOQUE_A_URL_DO_VanillaBackport-forge-1.20.1-1.1.5.4.2.jar"
+        },
+        {
+          "name": "vminus",
+          "filename": "vminus-3.3.2.jar",
+          "version": "",
+          "md5": "c8542aefe9602ad067583686da8ccfc9",
+          "size": 1221242,
+          "url": "COLOQUE_A_URL_DO_vminus-3.3.2.jar"
+        },
+        {
+          "name": "voicechat forge",
+          "filename": "voicechat-forge-1.20.1-2.6.12.jar",
+          "version": "",
+          "md5": "7be2cba507fb947b9aeac11ff0e4a2da",
+          "size": 4892161,
+          "url": "COLOQUE_A_URL_DO_voicechat-forge-1.20.1-2.6.12.jar"
+        },
+        {
+          "name": "YungsApi",
+          "filename": "YungsApi-1.20-Forge-4.0.6.jar",
+          "version": "",
+          "md5": "fe79f43dba8edbb8ede99f4e358e5b0c",
+          "size": 370524,
+          "url": "COLOQUE_A_URL_DO_YungsApi-1.20-Forge-4.0.6.jar"
+        },
+        {
+          "name": "YungsBetterDesertTemples",
+          "filename": "YungsBetterDesertTemples-1.20-Forge-3.0.3.jar",
+          "version": "",
+          "md5": "183e2c817e9094ce215c9e70c114825f",
+          "size": 918012,
+          "url": "COLOQUE_A_URL_DO_YungsBetterDesertTemples-1.20-Forge-3.0.3.jar"
+        },
+        {
+          "name": "YungsBetterDungeons",
+          "filename": "YungsBetterDungeons-1.20-Forge-4.0.4.jar",
+          "version": "",
+          "md5": "2de2f1be8f528ad139003bb5c73d49f3",
+          "size": 792381,
+          "url": "COLOQUE_A_URL_DO_YungsBetterDungeons-1.20-Forge-4.0.4.jar"
+        },
+        {
+          "name": "YungsBetterMineshafts",
+          "filename": "YungsBetterMineshafts-1.20-Forge-4.0.4.jar",
+          "version": "",
+          "md5": "fe8d205c98cb02840d46646fb7cf5ab8",
+          "size": 492998,
+          "url": "COLOQUE_A_URL_DO_YungsBetterMineshafts-1.20-Forge-4.0.4.jar"
+        },
+        {
+          "name": "YungsBetterStrongholds",
+          "filename": "YungsBetterStrongholds-1.20-Forge-4.0.3.jar",
+          "version": "",
+          "md5": "8c00ed5d2bab232040a1d4d0ef746ae6",
+          "size": 473564,
+          "url": "COLOQUE_A_URL_DO_YungsBetterStrongholds-1.20-Forge-4.0.3.jar"
+        }
+      ]
+    }
+  }
+}

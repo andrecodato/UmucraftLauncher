@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:;">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Launcher</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- TITLEBAR -->
+<div class="titlebar" id="titlebar">
+  <div class="titlebar-logo">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#4ade80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span class="titlebar-title">MyServer Launcher</span>
+  </div>
+  <div class="titlebar-controls">
+    <button class="tb-btn" id="btn-minimize" title="Minimizar">─</button>
+    <button class="tb-btn" id="btn-maximize" title="Maximizar">□</button>
+    <button class="tb-btn close" id="btn-close" title="Fechar">✕</button>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <nav class="sidebar-nav">
+    <button class="nav-btn active" data-tab="home" title="Início">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Início</span>
+    </button>
+    <button class="nav-btn" data-tab="mods" title="Mods">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+      <span>Mods</span>
+    </button>
+    <button class="nav-btn" data-tab="settings" title="Configurações">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
+      <span>Config</span>
+    </button>
+    <button class="nav-btn" data-tab="news" title="Notícias">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 22h16a2 2 0 002-2V4a2 2 0 00-2-2H8a2 2 0 00-2 2v16a2 2 0 01-2 2zm0 0a2 2 0 01-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8M15 18h-5M10 6h8v4h-8z"/></svg>
+      <span>News</span>
+    </button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="server-status" id="server-status">
+      <span class="status-dot" id="status-dot"></span>
+      <span id="status-label">Verificando...</span>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<main class="content">
+
+  <!-- HOME TAB -->
+  <div class="tab active" id="tab-home">
+    <div class="home-hero">
+      <div class="hero-bg"></div>
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <h1 class="hero-title" id="server-name">MyServer</h1>
+        <p class="hero-subtitle" id="server-description">Carregando informações do servidor...</p>
+        <div class="hero-tags" id="hero-tags"></div>
+      </div>
+    </div>
+
+    <!-- Profile selector -->
+    <div class="section">
+      <div class="section-row">
+        <div class="form-group flex-1">
+          <label>Perfil / Versão</label>
+          <select id="profile-select" class="select"></select>
+        </div>
+        <div class="form-group flex-1">
+          <label>Jogador (offline)</label>
+          <input type="text" id="username-input" class="input" placeholder="Seu nickname" maxlength="16">
+        </div>
+      </div>
+    </div>
+
+    <!-- Launch section -->
+    <div class="launch-section">
+      <div class="launch-info" id="launch-info">
+        <span id="mc-version-badge" class="badge">MC 1.20.1</span>
+        <span id="forge-badge" class="badge forge">Forge 47.2.0</span>
+        <span id="java-badge" class="badge java">Java 17</span>
+        <span id="mods-badge" class="badge mods">0 mods</span>
+      </div>
+      <button class="launch-btn" id="launch-btn">
+        <span class="launch-btn-text">JOGAR</span>
+        <svg class="launch-icon" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      </button>
+    </div>
+
+    <!-- Progress panel (hidden by default) -->
+    <div class="progress-panel" id="progress-panel" style="display:none">
+      <div class="progress-phase" id="progress-phase">Preparando...</div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar" id="progress-bar"></div>
+        <span class="progress-pct" id="progress-pct">0%</span>
+      </div>
+      <div class="progress-file" id="progress-file"></div>
+      <div class="log-console" id="log-console"></div>
+    </div>
+  </div>
+
+  <!-- MODS TAB -->
+  <div class="tab" id="tab-mods">
+    <div class="tab-header">
+      <h2>Mods do Servidor</h2>
+      <button class="btn-secondary" id="refresh-manifest-btn">↺ Atualizar lista</button>
+    </div>
+    <div class="mods-grid" id="mods-grid">
+      <div class="empty-state">Clique em "Atualizar lista" para carregar os mods.</div>
+    </div>
+  </div>
+
+  <!-- SETTINGS TAB -->
+  <div class="tab" id="tab-settings">
+    <div class="tab-header">
+      <h2>Configurações</h2>
+    </div>
+    <div class="settings-form">
+      <div class="settings-section">
+        <h3>Desempenho</h3>
+        <div class="form-group">
+          <label>RAM Alocada: <strong id="ram-display">4096 MB</strong></label>
+          <input type="range" id="ram-slider" class="slider" min="1024" max="16384" step="512" value="4096">
+          <div class="slider-labels">
+            <span>1 GB</span>
+            <span id="ram-max-label">16 GB</span>
+          </div>
+          <p class="hint">Recomendado: 4–8 GB para modpacks grandes. Não aloque mais de 70% da sua RAM total.</p>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h3>Diretório do Minecraft</h3>
+        <div class="form-group">
+          <div class="path-row">
+            <input type="text" id="mc-dir-input" class="input" readonly>
+            <button class="btn-secondary" id="browse-dir-btn">Procurar</button>
+          </div>
+          <p class="hint">A pasta onde o Minecraft está instalado (.minecraft).</p>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h3>Java</h3>
+        <div class="form-group">
+          <p class="hint">O launcher baixa e gerencia automaticamente o Java correto para cada versão do Minecraft. Não é necessário instalar o Java manualmente.</p>
+          <div id="java-status-list"></div>
+          <button class="btn-secondary" id="open-launcher-dir-btn">Abrir pasta do launcher</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h3>Conta</h3>
+        <div class="form-group">
+          <label>Modo de login</label>
+          <select class="select" id="login-mode">
+            <option value="offline">Offline (pirata)</option>
+            <option value="microsoft">Microsoft (conta original)</option>
+          </select>
+          <p class="hint" id="login-hint">Modo offline: use qualquer nickname. O servidor deve permitir modo offline.</p>
+        </div>
+        <div id="ms-login-section" style="display:none">
+          <button class="btn-primary" id="ms-login-btn">Entrar com Microsoft</button>
+          <div id="ms-account-info" style="display:none"></div>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="save-settings-btn">Salvar configurações</button>
+    </div>
+  </div>
+
+  <!-- NEWS TAB -->
+  <div class="tab" id="tab-news">
+    <div class="tab-header">
+      <h2>Notícias do Servidor</h2>
+      <span id="news-date" class="news-date"></span>
+    </div>
+    <div class="news-list" id="news-list">
+      <div class="empty-state">Carregando notícias...</div>
+    </div>
+  </div>
+
+</main>
+
+<script src="renderer.js"></script>
+</body>
+</html>
