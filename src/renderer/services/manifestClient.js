@@ -64,6 +64,10 @@ export function updateVersionBadges() {
   if (mcVer.startsWith('1.20') || mcVer.startsWith('1.21')) javaVer = '21';
   $('java-badge').textContent = 'Java ' + javaVer;
 
-  const modsCount = (prof.mods || []).length;
-  $('mods-badge').textContent = modsCount + ' mod' + (modsCount !== 1 ? 's' : '');
+  const modsBadge = $('mods-badge');
+  if (prof.modsVersion) {
+    modsBadge.textContent = 'Mods v' + prof.modsVersion;
+  } else {
+    modsBadge.textContent = 'Sem mods';
+  }
 }

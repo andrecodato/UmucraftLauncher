@@ -7,42 +7,16 @@
     "Survival Tech": {
       "minecraftVersion": "1.20.1",
       "forgeVersion": "47.2.0",
-      "mods": [
-        {
-          "name": "Create",
-          "filename": "create-1.20.1-0.5.1.f.jar",
-          "version": "0.5.1",
-          "md5": "abc123def456abc123def456abc123de",
-          "url": "https://www.dropbox.com/scl/fi/XXXXX/create-1.20.1-0.5.1.f.jar?rlkey=XXXXX&dl=1"
-        },
-        {
-          "name": "JEI",
-          "filename": "jei-1.20.1-forge-15.3.0.4.jar",
-          "version": "15.3.0.4",
-          "md5": "def456abc123def456abc123def456ab",
-          "url": "https://www.dropbox.com/scl/fi/YYYYY/jei-1.20.1-forge-15.3.0.4.jar?rlkey=YYYYY&dl=1"
-        },
-        {
-          "name": "Applied Energistics 2",
-          "filename": "appliedenergistics2-forge-15.0.22.jar",
-          "version": "15.0.22",
-          "md5": "fed321cba654fed321cba654fed321cb",
-          "url": "https://www.dropbox.com/scl/fi/ZZZZZ/appliedenergistics2-forge-15.0.22.jar?rlkey=ZZZZZ&dl=1"
-        }
-      ]
+      "modsVersion": "1.0.0",
+      "modsZipUrl": "https://www.dropbox.com/scl/fi/XXXXX/mods.zip?rlkey=XXXXX&dl=1",
+      "modsZipMd5": "abc123def456abc123def456abc123de"
     },
     "Adventure Pack": {
       "minecraftVersion": "1.20.1",
       "forgeVersion": "47.2.0",
-      "mods": [
-        {
-          "name": "Biomes O' Plenty",
-          "filename": "BiomesOPlenty-1.20.1-18.0.0.597-universal.jar",
-          "version": "18.0.0.597",
-          "md5": "111aaa222bbb333ccc444ddd555eee66",
-          "url": "https://raw.githubusercontent.com/SEU_USUARIO/SEU_REPO/main/mods/BiomesOPlenty-1.20.1-18.0.0.597-universal.jar"
-        }
-      ]
+      "modsVersion": "1.0.0",
+      "modsZipUrl": "https://www.dropbox.com/scl/fi/YYYYY/mods-adventure.zip?rlkey=YYYYY&dl=1",
+      "modsZipMd5": "def456abc123def456abc123def456ab"
     }
   },
 

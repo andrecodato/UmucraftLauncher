@@ -40,7 +40,7 @@ src/
 │   ├── services/                  # Lógica de negócio pura
 │   │   ├── profileService.js      #   Criação do perfil padrão + download do client MC
 │   │   ├── manifestService.js     #   Fetch do manifest remoto
-│   │   ├── modSyncService.js      #   Sincronização de mods (hash MD5 + download)
+│   │   ├── modSyncService.js      #   Sincronização de mods (download zip + verificação MD5 + extração)
 │   │   ├── minecraftLauncher.js   #   Resolução de Java + spawn do Minecraft
 │   │   └── serverPingService.js   #   Ping TCP do protocolo MC
 │   ├── utils/                     # Utilitários reutilizáveis
@@ -138,50 +138,50 @@ export const SERVERS = [
 ];
 ```
 
-### 4. Gerar o manifest.json
+### 4. Criar o pacote de mods (.zip)
+
+1. Coloque todos os `.jar` de mods numa pasta
+2. Compacte tudo num `.zip` (ex: `mods.zip`)
+3. Suba o `mods.zip` no **Dropbox** e pegue o link compartilhável
+   - Troque `?dl=0` por `?dl=1` no final do link
+
+### 5. Gerar o manifest.json
 
 ```bash
-# Coloque seus mods na pasta ./mods
-node scripts/generate-manifest.js ./mods ./manifest.json "Survival Tech"
+node scripts/generate-manifest.js ./mods.zip "https://www.dropbox.com/scl/fi/XXX/mods.zip?rlkey=YYY&dl=1"
 ```
 
-Isso vai gerar o `manifest.json` com os MD5s de todos os mods.
+Isso gera o `manifest.json` com a versão, link do Dropbox e MD5 do zip.
 
-### 5. Adicionar URLs dos mods
-
-Abra o `manifest.json` gerado e preencha a `url` de cada mod:
-
-```json
-{
-  "name": "Create",
-  "filename": "create-1.20.1-0.5.1.f.jar",
-  "md5": "abc123...",
-  "url": "https://www.dropbox.com/...?dl=1"
-}
+Para especificar versão e perfil:
+```bash
+node scripts/generate-manifest.js ./mods.zip "URL_DROPBOX" ./manifest.json "Default" "1.0.1"
 ```
 
-### 6. Hospedar o manifest.json
+### 6. Hospedar o manifest.json no GitHub
 
-Faça upload do `manifest.json` para o Dropbox/GitHub e use o link como `MANIFEST_URL`.
+1. Crie um repositório no GitHub (público)
+2. Faça upload do `manifest.json`
+3. Use a URL raw como `MANIFEST_URL`:
 
-**Formato do link Dropbox:**
 ```
-https://www.dropbox.com/scl/fi/XXXXX/manifest.json?rlkey=XXXXX&dl=1
+https://raw.githubusercontent.com/SEU_USUARIO/SEU_REPO/main/manifest.json
 ```
 
 ---
 
 ## 🔄 Como atualizar mods
 
-1. Substitua o `.jar` na sua pasta de mods
-2. Rode novamente:
+1. Atualize os `.jar` na sua pasta de mods
+2. Compacte tudo num novo `mods.zip`
+3. Suba o novo zip no Dropbox (mesmo link ou novo)
+4. Rode o script com uma versão nova:
    ```bash
-   node scripts/generate-manifest.js ./mods ./manifest.json "Survival Tech"
+   node scripts/generate-manifest.js ./mods.zip "URL_DROPBOX" ./manifest.json "Default" "1.0.1"
    ```
-3. Preencha a nova URL no manifest
-4. Faça upload do `manifest.json` atualizado
+5. Faça push do `manifest.json` atualizado no GitHub
 
-Na próxima vez que um player abrir o launcher, os mods serão baixados automaticamente!
+Na próxima vez que um player abrir o launcher, o pacote de mods será baixado e substituído automaticamente!
 
 ---
 
@@ -197,15 +197,9 @@ Na próxima vez que um player abrir o launcher, os mods serão baixados automati
     "Nome do Perfil": {
       "minecraftVersion": "1.20.1",
       "forgeVersion": "47.2.0",
-      "mods": [
-        {
-          "name": "Nome amigável",
-          "filename": "arquivo.jar",
-          "version": "1.0.0",
-          "md5": "hash_md5_do_arquivo",
-          "url": "url_direta_para_download"
-        }
-      ]
+      "modsVersion": "1.0.0",
+      "modsZipUrl": "https://www.dropbox.com/scl/fi/.../mods.zip?rlkey=...&dl=1",
+      "modsZipMd5": "hash_md5_do_zip"
     }
   },
 
