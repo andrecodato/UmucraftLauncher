@@ -6,7 +6,7 @@ const fs = require('fs');
 const BASE_DIR = path.join(os.homedir(), '.UmuCraft');
 
 const CONFIG = {
-  MANIFEST_URL: 'https://YOUR_HOST/manifest.json',
+  MANIFEST_URL: 'https://www.dropbox.com/scl/fi/2ayggbyej2fmvqc38ell1/manifest.json?rlkey=9sln2f4nxuwl7rsv04dh1y832&st=0d97hib4&dl=1',
   DEFAULT_PROFILE: 'Default',
 };
 

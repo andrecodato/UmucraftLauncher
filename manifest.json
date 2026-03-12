@@ -1,11 +1,18 @@
 {
   "profiles": {
-    "Default": {
+    "Umucraft Modded 2026": {
       "minecraftVersion": "1.20.1",
       "forgeVersion": "47.4.16",
       "modsVersion": "1.0.0",
-      "modsZipUrl": "https://www.dropbox.com/scl/fi/88gxad7owrm5a2k0rad1r/UmucraftModded2026-v1.zip?rlkey=vaxjg7bd0am30owskg44txfr4&st=au989b02&dl=0",
-      "modsZipMd5": "b447e09bd09082aadfbd02b03083e692acf947f6"
+      "modsZipUrl": "https://www.dropbox.com/scl/fi/88gxad7owrm5a2k0rad1r/UmucraftModded2026-v1.zip?rlkey=vaxjg7bd0am30owskg44txfr4&st=au989b02&dl=1",
+      "modsZipMd5": "33a78248ba30c446c000136f9e188aa066589109"
+    },
+    "Umucraft Vanilla": {
+      "minecraftVersion": "1.21.1",
+      "forgeVersion": "47.4.16",
+      "modsVersion": "1.0.0",
+      "modsZipUrl": "",
+      "modsZipMd5": ""
     }
   }
 }

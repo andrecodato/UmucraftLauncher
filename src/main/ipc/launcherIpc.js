@@ -7,6 +7,7 @@ const { send, log } = require('../utils/ipcSender');
 const { fetchManifest } = require('../services/manifestService');
 const { syncMods } = require('../services/modSyncService');
 const { getRequiredJavaVersion, resolveJavaForLaunch, launchMinecraft } = require('../services/minecraftLauncher');
+const { installForge } = require('../services/forgeInstaller');
 const state = require('../state');
 
 function registerLauncherIpc() {
@@ -50,6 +51,12 @@ function registerLauncherIpc() {
       send('phase', 'java');
       const javaPath = resolveJavaForLaunch(javaInfo.major);
 
+      if (forgeVersion) {
+        send('status', `Verificando Forge ${forgeVersion}...`);
+        send('phase', 'forge');
+        await installForge(javaPath, minecraftDir, mcVersion, forgeVersion);
+      }
+
       send('status', 'Sincronizando mods...');
       send('phase', 'mods');
       const updatedCount = await syncMods(profileManifest, minecraftDir);
@@ -63,7 +70,7 @@ function registerLauncherIpc() {
       send('status', 'Iniciando Minecraft...');
       send('phase', 'launch');
 
-      const pid = launchMinecraft({
+      const pid = await launchMinecraft({
         javaPath,
         minecraftDir,
         ram: config.ram || 4096,
