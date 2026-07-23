@@ -102,9 +102,13 @@ def import_atlauncher_instance(profile_name: str, instance_path: Path, profile: 
         log.warning("[%s] instance.json nao parece ser um export do ATLauncher, ignorando", profile_name)
         return False
 
+    # ATLauncher's "vanillaInstance" flag nao e confiavel como sinal de "sem
+    # loader" — instancias criadas manualmente (nao a partir de um modpack
+    # publicado) podem vir com vanillaInstance=True mesmo tendo um loader
+    # real em loaderVersion. loaderVersion.type e o dado que importa.
     loader_info = launcher.get("loaderVersion") or {}
     loader_type = loader_info.get("type")
-    loader = "vanilla" if launcher.get("vanillaInstance") or not loader_type else loader_type.lower()
+    loader = loader_type.lower() if loader_type else "vanilla"
     loader_version = loader_info.get("version") if loader != "vanilla" else None
     java_major = (data.get("javaVersion") or {}).get("majorVersion")
 
@@ -162,52 +166,86 @@ def rebuild_profile(profile_name: str) -> None:
 
 
 class DebouncedRebuilder:
-    def __init__(self, delay: float):
+    """Debounces rebuilds via a single polling thread instead of one
+    threading.Timer per event. Under a big burst (um modpack com centenas de
+    mods gera uma enxurrada de eventos duplicados via Samba + watch
+    recursivo), cancelar/recriar um Timer a cada evento pode nunca convergir:
+    se eventos chegam mais rápido do que um Timer novo consegue ser
+    agendado pelo SO antes de ser cancelado de novo, o rebuild trava pra
+    sempre (livelock), mesmo com um teto de espera. Um poller simples que só
+    olha "quanto tempo desde o ultimo evento" e "quanto tempo desde o
+    primeiro" não tem essa classe de bug e usa muito menos CPU sob carga."""
+
+    def __init__(self, delay: float, max_delay: float = 90.0, poll_interval: float = 2.0):
         self.delay = delay
-        self._timers = {}
+        self.max_delay = max_delay
+        self.poll_interval = poll_interval
+        self._last_event = {}
+        self._first_event = {}
         self._lock = threading.Lock()
+        self._wake = threading.Event()
+        self._thread = threading.Thread(target=self._loop, daemon=True)
+        self._thread.start()
 
     def schedule(self, profile_name: str) -> None:
         with self._lock:
-            existing = self._timers.get(profile_name)
-            if existing:
-                existing.cancel()
-            timer = threading.Timer(self.delay, self._fire, args=(profile_name,))
-            timer.daemon = True
-            self._timers[profile_name] = timer
-            timer.start()
+            now = time.monotonic()
+            self._last_event[profile_name] = now
+            self._first_event.setdefault(profile_name, now)
+        self._wake.set()
 
-    def _fire(self, profile_name: str) -> None:
-        with self._lock:
-            self._timers.pop(profile_name, None)
-        try:
-            rebuild_profile(profile_name)
-        except Exception:
-            log.exception("[%s] falha ao reconstruir", profile_name)
+    def _loop(self) -> None:
+        while True:
+            self._wake.wait(self.poll_interval)
+            self._wake.clear()
+            now = time.monotonic()
+            to_fire = []
+            with self._lock:
+                for name, last in list(self._last_event.items()):
+                    first = self._first_event[name]
+                    if now - last >= self.delay or now - first >= self.max_delay:
+                        to_fire.append(name)
+                        self._last_event.pop(name, None)
+                        self._first_event.pop(name, None)
+            for name in to_fire:
+                try:
+                    rebuild_profile(name)
+                except Exception:
+                    log.exception("[%s] falha ao reconstruir", name)
 
 
 class ModsHandler(FileSystemEventHandler):
     def __init__(self, rebuilder: DebouncedRebuilder):
         self.rebuilder = rebuilder
 
-    def _profile_from_path(self, path: str):
-        try:
-            rel = Path(path).relative_to(STAGING_DIR)
-        except ValueError:
-            return None
-        parts = rel.parts
-        if len(parts) >= 2 and parts[1] == "mods" and path.endswith(".jar"):
-            return parts[0]
-        if len(parts) == 2 and parts[1] == "instance.json":
-            return parts[0]
-        return None
-
     def on_any_event(self, event):
-        if event.is_directory:
+        path = Path(event.src_path)
+        try:
+            rel = path.relative_to(STAGING_DIR)
+        except ValueError:
             return
-        profile_name = self._profile_from_path(event.src_path)
-        if profile_name:
+        parts = rel.parts
+        if not parts:
+            return
+        profile_name = parts[0]
+
+        if event.is_directory:
+            # Novo perfil (ou a pasta mods/ dele) apareceu. Agenda um build
+            # mesmo sem saber ainda o que tem dentro: o Samba pode criar a
+            # pasta e despejar os arquivos rapido demais pro inotify registrar
+            # o watch da subpasta nova a tempo de ver os arquivos (race
+            # classica de watch recursivo). rebuild_profile sempre relê o
+            # diretorio do zero, entao um trigger aqui basta.
+            if len(parts) <= 2:
+                log.info("[%s] pasta nova detectada, agendando build", profile_name)
+                self.rebuilder.schedule(profile_name)
+            return
+
+        if len(parts) >= 2 and parts[1] == "mods" and event.src_path.endswith(".jar"):
             log.info("[%s] mudanca detectada: %s", profile_name, os.path.basename(event.src_path))
+            self.rebuilder.schedule(profile_name)
+        elif len(parts) == 2 and parts[1] == "instance.json":
+            log.info("[%s] mudanca detectada: instance.json", profile_name)
             self.rebuilder.schedule(profile_name)
 
 
