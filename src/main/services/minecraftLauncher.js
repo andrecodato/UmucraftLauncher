@@ -95,6 +95,28 @@ function loadVersionJson(versionsDir, versionId) {
 }
 
 /**
+ * ATLauncher's merged instance.json commonly lists the same library twice
+ * (vanilla and the loader both declare guava, gson, log4j, etc.), which
+ * makes the classpath contain the same jar path twice. NeoForge's
+ * BootstrapLauncher builds a Map keyed by path from the classpath and
+ * throws IllegalStateException: Duplicate key on startup if that happens,
+ * so this needs to be deduped before libraries are downloaded/classpathed.
+ */
+function dedupeLibraries(libraries) {
+  const seen = new Set();
+  const result = [];
+  for (const lib of libraries) {
+    const key = lib.name || lib.downloads?.artifact?.path;
+    if (key) {
+      if (seen.has(key)) continue;
+      seen.add(key);
+    }
+    result.push(lib);
+  }
+  return result;
+}
+
+/**
  * Check OS rules for a library or argument.
  * Also rejects rules gated by features (e.g. has_custom_resolution, is_demo_user).
  */
@@ -295,6 +317,11 @@ async function launchMinecraft({ javaPath, gameRoot, instanceDir, ram, username,
 
   log(`Loading version JSON: ${versionId}`);
   const versionData = loadVersionJson(versionsDir, versionId);
+
+  const dedupedLibraries = dedupeLibraries(versionData.libraries);
+  const removed = versionData.libraries.length - dedupedLibraries.length;
+  if (removed > 0) log(`${removed} libraries duplicadas removidas do version.json.`);
+  versionData.libraries = dedupedLibraries;
 
   // Ensure all libraries are downloaded
   send('status', 'Verificando libraries...');
