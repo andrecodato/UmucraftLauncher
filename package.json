@@ -56,7 +56,7 @@
     "launcher",
     "umucraft"
   ],
-  "author": "Andre Codato",
+  "author": "Andre Codato <andrecodato@gmail.com>",
   "license": "MIT",
   "devDependencies": {
     "electron": "^43.0.0",
