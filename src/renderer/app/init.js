@@ -7,6 +7,7 @@ import { setupTitlebar } from '../components/titlebar.js';
 import { setupSidebar } from '../components/sidebar.js';
 import { hideLoadingOverlay } from '../components/loadingOverlay.js';
 import { setupHomePage } from '../pages/homePage.js';
+import { setupModsPage } from '../pages/modsPage.js';
 import { setupDiscordPage } from '../pages/discordPage.js';
 import { setupSettingsPage } from '../pages/settingsPage.js';
 import { populateTipsTab } from '../pages/tipsPage.js';
@@ -17,6 +18,7 @@ async function init() {
   setupSidebar();
   setupIpcListeners();
   setupHomePage();
+  setupModsPage();
   setupDiscordPage();
   setupSettingsPage();
 

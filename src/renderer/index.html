@@ -136,11 +136,14 @@
   <!-- MODS TAB -->
   <div class="tab" id="tab-mods">
     <div class="tab-header">
-      <h2>Mods Instalados</h2>
+      <h2>Mods</h2>
       <button class="btn-secondary" id="refresh-manifest-btn">&#x21BA; Atualizar lista</button>
     </div>
-    <div class="mods-container" id="mods-container">
-      <div class="empty-state">Clique em "Atualizar lista" para carregar os mods.</div>
+    <div class="mods-container-wrap">
+      <input type="text" id="mods-search" class="input mods-search" placeholder="Buscar mod pelo nome...">
+      <div class="mods-container" id="mods-container">
+        <div class="empty-state">Clique em "Atualizar lista" para carregar os mods.</div>
+      </div>
     </div>
   </div>
 

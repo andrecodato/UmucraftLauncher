@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const { BASE_DIR, CONFIG, LATEST_MC_VERSION } = require('../utils/paths');
 const { send, log } = require('../utils/ipcSender');
+const { httpGetJson } = require('../utils/http');
 const { fetchManifest } = require('../services/manifestService');
 const { syncMods } = require('../services/modSyncService');
 const { getRequiredJavaVersion, resolveJavaForLaunch, launchMinecraft } = require('../services/minecraftLauncher');
@@ -31,6 +32,21 @@ function registerLauncherIpc() {
       if (fs.existsSync(cachePath)) {
         log(`Could not reach server, using cached manifest: ${err.message}`);
         return { ok: true, manifest: JSON.parse(fs.readFileSync(cachePath, 'utf8')), cached: true };
+      }
+      return { ok: false, error: err.message };
+    }
+  });
+
+  ipcMain.handle('fetch-mods-list', async (_, { url, profileName }) => {
+    const cachePath = path.join(BASE_DIR, 'cache', `mods-list-${slugify(profileName)}.json`);
+    try {
+      const modsList = await httpGetJson(url);
+      fs.mkdirSync(path.dirname(cachePath), { recursive: true });
+      fs.writeFileSync(cachePath, JSON.stringify(modsList));
+      return { ok: true, modsList };
+    } catch (err) {
+      if (fs.existsSync(cachePath)) {
+        return { ok: true, modsList: JSON.parse(fs.readFileSync(cachePath, 'utf8')), cached: true };
       }
       return { ok: false, error: err.message };
     }
