@@ -1,22 +1,67 @@
-# 🎮 UmuCraft Launcher
+<div align="center">
+  <img src="src/assets/large_icon.png" width="120" alt="UmuCraft logo">
 
-Launcher personalizado para servidores Minecraft (Forge, NeoForge, Fabric ou vanilla) com **auto-update de mods**, seleção de RAM, download automático de Java, seletor de servidor com ping ao vivo e integração com Discord.
+  # UmuCraft Launcher
 
-Construído com **Electron** — interface moderna com sidebar, 6 abas (Home, Mods, Noticias, Dicas, Discord, Configurações) e sistema de bootstrap para instalação automática do Java. Cada servidor roda numa instância isolada (mods/config próprios), então trocar de servidor nunca apaga os mods de outro.
+  **O jeito fácil de jogar no UmuCraft.** Baixa, abre, clica em JOGAR.
 
----
-
-## 🚀 Como usar (jogadores)
-
-1. Baixe o instalador (`.exe` no Windows, `.AppImage` no Linux)
-2. Instale normalmente
-3. Abra o launcher — o Java será detectado/instalado automaticamente
-4. Coloque seu nickname, clique no card do servidor que quer jogar e clique **JOGAR**
-5. Se for a primeira vez nesse servidor, o launcher cria a instância, baixa o loader (Forge/NeoForge/Fabric) e os mods automaticamente
+  [![Última versão](https://img.shields.io/github/v/release/andrecodato/UmucraftLauncher?style=for-the-badge&color=4ade80&labelColor=0d1117&label=vers%C3%A3o)](https://github.com/andrecodato/UmucraftLauncher/releases/latest)
+  [![Downloads](https://img.shields.io/github/downloads/andrecodato/UmucraftLauncher/total?style=for-the-badge&color=4ade80&labelColor=0d1117&label=downloads)](https://github.com/andrecodato/UmucraftLauncher/releases/latest)
+  [![Licença](https://img.shields.io/badge/licen%C3%A7a-MIT-4ade80?style=for-the-badge&labelColor=0d1117)](#)
+  [![Plataforma](https://img.shields.io/badge/plataforma-Windows-4ade80?style=for-the-badge&labelColor=0d1117)](#)
+</div>
 
 ---
 
-## 📂 Estrutura do Projeto
+<div align="center">
+  <img src="docs/screenshots/home.png" width="720" alt="Tela inicial do launcher">
+</div>
+
+## O que é isso?
+
+Um launcher próprio pra galera do UmuCraft jogar Minecraft com modpack sem
+dor de cabeça. Sem precisar instalar Java, sem precisar saber o que é Forge
+ou NeoForge, sem precisar configurar nada — o launcher resolve tudo sozinho
+e te avisa quando sai mod novo.
+
+## 🚀 Como jogar
+
+1. Baixe o instalador na [página de releases](https://github.com/andrecodato/UmucraftLauncher/releases/latest) (`.exe`)
+2. Instale normalmente (próximo, próximo, concluir)
+3. Abra o launcher — ele detecta e baixa o Java sozinho na primeira vez
+4. Escolha seu nickname, clique no servidor que quer jogar, e clique em **JOGAR**
+
+Pronto. Da segunda vez em diante é só abrir e jogar — mods e atualizações
+chegam sozinhos.
+
+## ✨ O que o launcher faz por você
+
+- **Java automático** — detecta e instala a versão certa, sem downloads manuais
+- **Mods sempre atualizados** — quando sai mod novo no servidor, o launcher baixa sozinho na próxima vez que você abrir
+- **Vários servidores, uma conta só** — cada servidor guarda seus próprios mods separados; trocar de servidor não bagunça nada
+- **Se atualiza sozinho** — sem precisar baixar instalador novo toda vez
+
+<div align="center">
+  <img src="docs/screenshots/mods.png" width="720" alt="Aba de mods, com busca">
+</div>
+
+## ❓ Perguntas frequentes
+
+**Preciso instalar o Forge/NeoForge/Fabric na mão?**
+Não, o launcher cuida disso sozinho.
+
+**Como troco de servidor?**
+Clica no card do servidor que quiser na tela inicial. Cada um mantém seus próprios mods.
+
+**Onde entro no Discord da comunidade?**
+Tem um botão dedicado na aba Discord do launcher.
+
+---
+
+<details>
+<summary><strong>📖 Documentação técnica (contribuidores e admins do servidor)</strong></summary>
+
+## Estrutura do Projeto
 
 ```
 src/
@@ -48,6 +93,7 @@ src/
 │   │   ├── paths.js               #   BASE_DIR, constantes, ensureDirectories
 │   │   ├── ipcSender.js           #   send() e log() para o renderer
 │   │   ├── download.js            #   Download de arquivos com progresso
+│   │   ├── concurrency.js         #   Pool de downloads paralelos
 │   │   ├── http.js                #   HTTP GET JSON com redirect
 │   │   └── fileHash.js            #   Hash MD5 de arquivos
 │   └── windows/                   # Criação de janelas
@@ -77,7 +123,7 @@ src/
 │   │   └── profileCard.js         #   Card de servidor/perfil (create/update, ping ao vivo)
 │   ├── pages/                     # Lógica por aba
 │   │   ├── homePage.js            #   Home — launch, username
-│   │   ├── modsPage.js            #   Mods — grid agrupada por modpack
+│   │   ├── modsPage.js            #   Mods — lista completa por modpack, com busca
 │   │   ├── newsPage.js            #   Noticias — posts do manifest.news
 │   │   ├── tipsPage.js            #   Dicas — grid por categoria
 │   │   ├── discordPage.js         #   Discord — botão de convite
@@ -99,20 +145,18 @@ src/
 │       └── settings.css            #   Formulário de configurações
 │
 └── assets/                        # Ícones do app
-    └── icon.png / icon.ico
+    └── icon.png / icon.ico / large_icon.png / server-icon.png / banner_1.jpg
 ```
 
----
+### ⚙️ Setup para admins do servidor
 
-## ⚙️ Setup para admins do servidor
-
-### 1. Instalar dependências
+#### 1. Instalar dependências
 
 ```bash
 npm install
 ```
 
-### 2. Configurar a URL do manifesto
+#### 2. Configurar a URL do manifesto
 
 Edite `src/main/utils/paths.js`, objeto `CONFIG`:
 
@@ -124,68 +168,48 @@ const CONFIG = {
 ```
 
 **Opções de hospedagem:**
+- **Raspberry Pi self-hosted (recomendado):** veja `deploy/pi-server/README.md` — Samba + watcher automático + Cloudflare Tunnel. Depois de configurado, atualizar mods vira só arrastar `.jar` numa pasta de rede (zero passos manuais de zip/manifest/upload).
 - **Dropbox:** Crie um link de compartilhamento e troque `?dl=0` por `?dl=1`
 - **GitHub Raw:** `https://raw.githubusercontent.com/usuario/repo/main/manifest.json`
 - **Servidor próprio:** Qualquer URL HTTP/HTTPS pública
-- **Raspberry Pi self-hosted (recomendado):** veja `deploy/pi-server/README.md` — Samba + watcher automático + Cloudflare Tunnel. Depois de configurado, atualizar mods vira só arrastar `.jar` numa pasta de rede (zero passos manuais de zip/manifest/upload).
 
-### 3. Configurar servidores
+#### 3. Configurar servidores
 
-Cada servidor é uma entrada em `profiles` no `manifest.json` — não existe mais uma lista separada de servidores. Adicione `host`/`port` por perfil (veja a estrutura completa abaixo).
+Cada servidor é uma entrada em `profiles` no `manifest.json`. Adicione `host`/`port` por perfil (veja a estrutura completa abaixo).
 
-### 4. Criar o pacote de mods (.zip)
+#### 4. Criar o pacote de mods (.zip)
 
 1. Coloque todos os `.jar` de mods numa pasta
 2. Compacte tudo num `.zip` (ex: `mods.zip`)
-3. Suba o `mods.zip` no **Dropbox** e pegue o link compartilhável
-   - Troque `?dl=0` por `?dl=1` no final do link
+3. Suba o `mods.zip` no **Dropbox** e pegue o link compartilhável (troque `?dl=0` por `?dl=1`)
 
-### 5. Gerar o manifest.json
+#### 5. Gerar o manifest.json
 
 ```bash
 node scripts/generate-manifest.js ./mods.zip "https://www.dropbox.com/scl/fi/XXX/mods.zip?rlkey=YYY&dl=1"
 ```
 
-Isso gera o `manifest.json` com a versão, link do Dropbox e MD5 do zip.
+Isso gera o `manifest.json` com a versão, link do Dropbox e MD5 do zip. Pra especificar versão e perfil:
 
-Para especificar versão e perfil:
 ```bash
 node scripts/generate-manifest.js ./mods.zip "URL_DROPBOX" ./manifest.json "Default" "1.0.1"
 ```
 
-Esse script só cuida do zip de mods — `loader`/`loaderVersion`/`host`/`port` você edita direto no `manifest.json` (ou deixa o watcher do Pi preencher `loader`/`loaderVersion`, veja abaixo).
+Esse script só cuida do zip de mods — `loader`/`loaderVersion`/`host`/`port` você edita direto no `manifest.json` (ou deixa o watcher do Pi preencher `loader`/`loaderVersion`, veja `deploy/pi-server/README.md`).
 
-### 6. Hospedar o manifest.json no GitHub
+### 🔄 Como atualizar mods
 
-1. Crie um repositório no GitHub (público)
-2. Faça upload do `manifest.json`
-3. Use a URL raw como `MANIFEST_URL`:
-
-```
-https://raw.githubusercontent.com/SEU_USUARIO/SEU_REPO/main/manifest.json
-```
-
----
-
-## 🔄 Como atualizar mods
-
-**Opção recomendada (self-hosted no Pi):** veja `deploy/pi-server/README.md`. Você arrasta a pasta do modpack (mods + `instance.json` exportado do ATLauncher) pra um drive de rede, e o watcher zipa os mods, importa a versão/loader do `instance.json` e publica tudo sozinho — nenhum passo manual abaixo é necessário.
+**Opção recomendada (self-hosted no Pi):** veja `deploy/pi-server/README.md`. Você arrasta a pasta do modpack (mods + `instance.json` exportado do ATLauncher) pra um drive de rede, e o watcher zipa os mods, importa a versão/loader e a lista completa de mods do `instance.json`, e publica tudo sozinho.
 
 **Manual (Dropbox/GitHub):**
-1. Atualize os `.jar` na sua pasta de mods
-2. Compacte tudo num novo `mods.zip`
-3. Suba o novo zip no Dropbox (mesmo link ou novo)
-4. Rode o script com uma versão nova:
+1. Atualize os `.jar` na sua pasta de mods, compacte num novo `mods.zip`, suba no Dropbox
+2. Rode o script com uma versão nova:
    ```bash
    node scripts/generate-manifest.js ./mods.zip "URL_DROPBOX" ./manifest.json "Default" "1.0.1"
    ```
-5. Faça push do `manifest.json` atualizado no GitHub
+3. Faça push do `manifest.json` atualizado
 
-Na próxima vez que um player abrir o launcher, o pacote de mods será baixado e substituído automaticamente!
-
----
-
-## 🏗️ Estrutura do manifest.json
+### 🏗️ Estrutura do manifest.json
 
 ```json
 {
@@ -205,7 +229,9 @@ Na próxima vez que um player abrir o launcher, o pacote de mods será baixado e
       "versionJsonMd5": "hash_md5_do_version_json",
       "modsVersion": "1.0.0",
       "modsZipUrl": "https://www.dropbox.com/scl/fi/.../mods.zip?rlkey=...&dl=1",
-      "modsZipMd5": "hash_md5_do_zip"
+      "modsZipMd5": "hash_md5_do_zip",
+      "modsListUrl": "https://SUA_URL/profiles/Nome%20do%20Perfil/mods-list.json",
+      "modsListMd5": "hash_md5_da_lista"
     }
   },
 
@@ -222,75 +248,47 @@ Na próxima vez que um player abrir o launcher, o pacote de mods será baixado e
 ```
 
 - `loader`: `"vanilla"`, `"forge"`, `"neoforge"` ou `"fabric"`. Para vanilla, omita `loaderVersion`/`versionJsonUrl`/`versionJsonMd5`.
-- `loader`, `loaderVersion`, `javaMajor`, `versionJsonUrl` e `versionJsonMd5` são preenchidos automaticamente pelo watcher do Pi a partir de um `instance.json` do ATLauncher (veja `deploy/pi-server/README.md`) — só `host`/`port` são configurados à mão.
+- `loader`, `loaderVersion`, `javaMajor`, `versionJsonUrl`, `versionJsonMd5`, `modsListUrl` e `modsListMd5` são preenchidos automaticamente pelo watcher do Pi a partir de um `instance.json` do ATLauncher (veja `deploy/pi-server/README.md`) — só `host`/`port` são configurados à mão.
+- `modsListUrl` aponta pra um JSON com nome, versão, autor, ícone e descrição de cada mod (usado na aba Mods do launcher) — gerado a partir do `launcher.mods` do `instance.json`.
 - `host`/`port`: endereço do servidor Minecraft, mostrado no card do launcher com ping ao vivo.
 
 **Tags de notícia disponíveis:** `update`, `maintenance`, `event`, `info`
 
----
+### 🔄 Auto-update do launcher
 
-## 🔄 Auto-update do launcher
+O launcher em si (não só os mods) se atualiza sozinho via `electron-updater`. Pra publicar uma versão nova:
 
-O launcher em si (não só os mods) se atualiza sozinho via `electron-updater`, usando o mesmo servidor do Pi como feed de update (`https://umucraft-updates.codato.dev/launcher/`). Isso é checado uma vez na janela de bootstrap, antes do check de Java — se tiver versão nova, baixa e reinicia sozinho (silencioso); se não tiver, ou a checagem falhar (sem internet, Pi fora do ar), o launcher segue normal sem travar a inicialização.
-
-**Pra publicar uma versão nova (automático via git):**
 1. Bump o campo `version` em `package.json`, commit
 2. Crie e dê push numa tag igual à versão: `git tag v1.0.1 && git push origin v1.0.1`
-3. O GitHub Actions (`.github/workflows/release-launcher.yml`) builda o `.exe` e publica como GitHub Release; o Pi (`deploy/pi-server/pull-launcher-release.py`, via timer systemd a cada 5 min) detecta a release nova e publica sozinho no feed — veja `deploy/pi-server/README.md` pro deploy inicial desses dois arquivos
+3. O GitHub Actions builda o `.exe` e publica como GitHub Release; o Pi detecta a release nova e publica sozinho no feed — veja `deploy/pi-server/README.md`
 
 `npm run publish-launcher` continua disponível como atalho manual (builda local e sobe via SSH na hora, sem esperar o Actions).
 
-Os players que já tiverem o launcher aberto recebem a atualização no próximo restart, sem precisar baixar/reinstalar nada na mão. Configuração fica em `package.json` → `build.publish` (provider `generic` apontando pro feed).
-
----
-
-## 🔨 Build (gerar instalador)
+### 🔨 Build (gerar instalador)
 
 ```bash
-# Windows
-npm run build
-
-# Linux
-npm run build:linux
-
-# macOS
-npm run build:mac
+npm run build         # Windows
+npm run build:linux   # Linux (AppImage)
+npm run build:mac     # macOS (dmg)
 ```
 
 O instalador será gerado na pasta `dist/`.
 
----
-
-## 🛠️ Desenvolvimento
+### 🛠️ Desenvolvimento
 
 ```bash
-# Iniciar em modo dev (com DevTools)
-npm run dev
-
-# Iniciar normalmente
-npm start
+npm run dev     # electron . --dev (com DevTools)
+npm start       # electron .
 ```
 
----
-
-## ☕ Java automático
-
-O launcher detecta e instala automaticamente o Java através do sistema de bootstrap:
-
-1. Ao abrir, uma janela de bootstrap verifica o Java instalado
-2. Se não encontrar uma versão compatível, baixa o Adoptium JDK automaticamente
-3. Após validação, abre o launcher principal
+### ☕ Java automático
 
 | Minecraft | Java |
 |-----------|------|
 | 1.17–1.19 | Java 17 |
 | 1.20–1.21 | Java 21 |
 
-Os players **não precisam instalar o Java** manualmente.
-
----
-
-## 📁 Pastas de dados (`~/.UmuCraft/`)
+### 📁 Pastas de dados (`%APPDATA%/.UmuCraft/`)
 
 | Pasta | Conteúdo |
 |-------|---------|
@@ -299,36 +297,19 @@ Os players **não precisam instalar o Java** manualmente.
 | `libraries/` | Bibliotecas do Minecraft/loader — **compartilhado** |
 | `assets/` | Assets do Minecraft — **compartilhado** |
 | `instances/<servidor>/` | Mods + config **isolados por servidor** (trocar de servidor não apaga o outro) |
-| `cache/` | Manifest em cache (offline fallback) |
+| `cache/` | Manifest/mods-list em cache (offline fallback) |
 | `logs/` | Logs (bootstrap.log) |
 | `config.json` | Configurações do player (username, RAM, servidor selecionado) |
 
----
+Instalações antigas (`~/.UmuCraft`, antes da v1.0.1) são migradas automaticamente na primeira abertura — nada se perde.
 
-## 🏛️ Arquitetura
-
-O projeto segue uma **arquitetura modular por camadas**:
+### 🏛️ Arquitetura
 
 - **Main Process** (CommonJS): `index.js` → `windows/` → `ipc/` → `services/` → `utils/`
 - **Renderer** (ES Modules): `app/init.js` → `pages/` → `components/` + `services/` → `store/` + `data/`
-- **IPC Bridge**: `preload.js` expõe `window.launcher.*` com ~15 métodos seguros via `contextBridge`
-- **Estilos**: 12 arquivos CSS modulares importados no `index.html`
+- **IPC Bridge**: `preload.js` expõe `window.launcher.*` com métodos seguros via `contextBridge`
+- **Estilos**: CSS modular importado no `index.html`
 
----
+Detalhes de infra do servidor (Pi, Samba, nginx, Cloudflare Tunnel, painel admin, releases automatizadas) ficam em `deploy/pi-server/README.md`. Práticas de git/versionamento/release ficam em `CLAUDE.md`.
 
-## ❓ FAQ
-
-**Os players precisam instalar o Forge/NeoForge/Fabric manualmente?**  
-Não. O launcher baixa e instala o loader sozinho a partir do `version.json` publicado no manifest (gerado automaticamente pelo watcher do Pi a partir do export do ATLauncher).
-
-**O launcher funciona com conta pirata?**  
-Sim, usa autenticação offline por padrão. O servidor precisa ter `online-mode=false`.
-
-**Como adicionar múltiplos servidores?**  
-Adicione mais entradas em `profiles` no manifest.json (cada uma com seu `host`/`port`/`loader`). Os players veem um card novo na Home automaticamente.
-
-**Onde configuro o link do Discord?**  
-Edite `src/renderer/data/discord.js`.
-
-**Como adicionar novas dicas/vídeos?**  
-Edite `src/renderer/data/tips.js` — cada entrada tem `title`, `thumbnail`, `url` e `category`.
+</details>
