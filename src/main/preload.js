@@ -15,6 +15,7 @@ contextBridge.exposeInMainWorld('launcher', {
 
   // Launcher actions
   fetchManifest: () => ipcRenderer.invoke('fetch-manifest'),
+  fetchModsList: (url, profileName) => ipcRenderer.invoke('fetch-mods-list', { url, profileName }),
   syncAndLaunch: (opts) => ipcRenderer.invoke('sync-and-launch', opts),
 
   // Server ping

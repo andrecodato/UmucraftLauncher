@@ -102,6 +102,30 @@ def rebuild_mods_zip(profile_name: str, mods_dir: Path, profile: dict) -> bool:
     return True
 
 
+def build_mods_list(mods: list) -> list:
+    """Lean, display-ready mod list from ATLauncher's launcher.mods — name,
+    version, description, author(s) and a CurseForge/Modrinth icon when the
+    mod has one. Skips mods the pack owner disabled in ATLauncher."""
+    result = []
+    for mod in mods:
+        if mod.get("disabled"):
+            continue
+        cf = mod.get("curseForgeProject") or {}
+        modrinth = mod.get("modrinthProject") or {}
+        icon_url = (cf.get("logo") or {}).get("thumbnailUrl") or modrinth.get("icon_url") or ""
+        authors = [a.get("name") for a in cf.get("authors", []) if a.get("name")]
+        result.append({
+            "name": mod.get("name") or mod.get("file") or "?",
+            "version": mod.get("version") or "",
+            "file": mod.get("file") or "",
+            "description": mod.get("description") or cf.get("summary") or "",
+            "iconUrl": icon_url,
+            "authors": authors,
+        })
+    result.sort(key=lambda m: m["name"].lower())
+    return result
+
+
 def import_atlauncher_instance(profile_name: str, instance_path: Path, profile: dict) -> bool:
     try:
         data = json.loads(instance_path.read_text(encoding="utf-8"))
@@ -129,12 +153,17 @@ def import_atlauncher_instance(profile_name: str, instance_path: Path, profile: 
     lean_bytes = json.dumps(lean, indent=2, ensure_ascii=False).encode("utf-8")
     version_md5 = hashlib.md5(lean_bytes).hexdigest()
 
+    mods_list = build_mods_list(launcher.get("mods") or [])
+    mods_list_bytes = json.dumps(mods_list, indent=2, ensure_ascii=False).encode("utf-8")
+    mods_list_md5 = hashlib.md5(mods_list_bytes).hexdigest()
+
     changed = (
         profile.get("minecraftVersion") != mc_version
         or profile.get("loader") != loader
         or profile.get("loaderVersion") != loader_version
         or profile.get("javaMajor") != java_major
         or profile.get("versionJsonMd5") != version_md5
+        or profile.get("modsListMd5") != mods_list_md5
     )
     if not changed:
         log.info("[%s] instance.json identico ao ultimo import, pulando", profile_name)
@@ -146,6 +175,11 @@ def import_atlauncher_instance(profile_name: str, instance_path: Path, profile: 
     tmp_path.write_bytes(lean_bytes)
     tmp_path.replace(version_json_path)
 
+    mods_list_path = WWW_DIR / "profiles" / profile_name / "mods-list.json"
+    tmp_path = mods_list_path.with_suffix(".json.tmp")
+    tmp_path.write_bytes(mods_list_bytes)
+    tmp_path.replace(mods_list_path)
+
     profile["minecraftVersion"] = mc_version
     profile["loader"] = loader
     profile["loaderVersion"] = loader_version
@@ -153,6 +187,8 @@ def import_atlauncher_instance(profile_name: str, instance_path: Path, profile: 
         profile["javaMajor"] = java_major
     profile["versionJsonUrl"] = f"{PUBLIC_BASE_URL}/profiles/{urllib.parse.quote(profile_name)}/version.json"
     profile["versionJsonMd5"] = version_md5
+    profile["modsListUrl"] = f"{PUBLIC_BASE_URL}/profiles/{urllib.parse.quote(profile_name)}/mods-list.json"
+    profile["modsListMd5"] = mods_list_md5
 
     log.info("[%s] instance.json importado -> mc %s, loader %s %s",
               profile_name, mc_version, loader, loader_version or "")

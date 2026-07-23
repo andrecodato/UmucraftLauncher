@@ -1,7 +1,11 @@
-import { $, capitalize } from '../helpers.js';
+import { $, escapeHtml, capitalize } from '../helpers.js';
 import { appState } from '../store/state.js';
 
-export function populateModsTab() {
+export function setupModsPage() {
+  $('mods-search').addEventListener('input', filterMods);
+}
+
+export async function populateModsTab() {
   if (!appState.manifest) return;
   const container = $('mods-container');
   container.innerHTML = '';
@@ -12,49 +16,88 @@ export function populateModsTab() {
     return;
   }
 
-  profileNames.forEach(profileName => {
-    const prof = appState.manifest.profiles[profileName];
+  profileNames.forEach(profileName => loadProfileMods(profileName, container));
+}
 
-    const group = document.createElement('div');
-    group.className = 'modpack-group';
+async function loadProfileMods(profileName, container) {
+  const prof = appState.manifest.profiles[profileName];
 
-    const title = document.createElement('div');
-    title.className = 'modpack-group-title';
-    title.textContent = 'Modpack: ' + profileName;
-    group.appendChild(title);
+  const group = document.createElement('div');
+  group.className = 'modpack-group';
 
-    const info = document.createElement('div');
-    info.className = 'mods-grid';
+  const loaderLabel = prof.loader && prof.loader !== 'vanilla' && prof.loaderVersion
+    ? ` · ${capitalize(prof.loader)} ${prof.loaderVersion}`
+    : '';
 
-    const card = document.createElement('div');
-    card.className = 'mod-card';
+  const title = document.createElement('div');
+  title.className = 'modpack-group-title';
+  title.textContent = `${profileName} — MC ${prof.minecraftVersion || '?'}${loaderLabel}`;
+  group.appendChild(title);
 
-    const nameEl = document.createElement('div');
-    nameEl.className = 'mod-name';
-    nameEl.textContent = `Minecraft ${prof.minecraftVersion || '?'}`;
-    card.appendChild(nameEl);
+  const grid = document.createElement('div');
+  grid.className = 'mods-grid';
+  grid.innerHTML = '<div class="empty-state">Carregando mods...</div>';
+  group.appendChild(grid);
+  container.appendChild(group);
 
-    if (prof.loader && prof.loader !== 'vanilla' && prof.loaderVersion) {
-      const loaderEl = document.createElement('div');
-      loaderEl.className = 'mod-meta';
-      loaderEl.textContent = `${capitalize(prof.loader)} ${prof.loaderVersion}`;
-      card.appendChild(loaderEl);
-    }
+  if (!prof.modsZipUrl) {
+    grid.innerHTML = '<div class="empty-state">Este modpack ainda não tem mods.</div>';
+    return;
+  }
 
-    if (prof.modsVersion) {
-      const verEl = document.createElement('div');
-      verEl.className = 'mod-meta';
-      verEl.textContent = `Versão dos mods: ${prof.modsVersion}`;
-      card.appendChild(verEl);
-    }
+  if (!prof.modsListUrl) {
+    grid.innerHTML = '<div class="empty-state">A lista detalhada de mods ainda não foi publicada para este modpack.</div>';
+    return;
+  }
 
-    const statusEl = document.createElement('div');
-    statusEl.className = 'mod-meta';
-    statusEl.textContent = prof.modsZipUrl ? 'Pacote de mods disponível' : 'Sem pacote configurado';
-    card.appendChild(statusEl);
+  const result = await window.launcher.fetchModsList(prof.modsListUrl, profileName);
+  if (!result.ok || !result.modsList || result.modsList.length === 0) {
+    grid.innerHTML = '<div class="empty-state">Não foi possível carregar a lista de mods.</div>';
+    return;
+  }
 
-    info.appendChild(card);
-    group.appendChild(info);
-    container.appendChild(group);
+  const countEl = document.createElement('span');
+  countEl.className = 'modpack-group-count';
+  countEl.textContent = `${result.modsList.length} mods`;
+  title.appendChild(countEl);
+
+  grid.innerHTML = '';
+  result.modsList.forEach(mod => grid.appendChild(createModCard(mod)));
+}
+
+function createModCard(mod) {
+  const card = document.createElement('div');
+  card.className = 'mod-card';
+
+  const icon = mod.iconUrl
+    ? `<img class="mod-icon" src="${escapeHtml(mod.iconUrl)}" alt="" loading="lazy">`
+    : '<div class="mod-icon-placeholder"></div>';
+
+  const authors = mod.authors && mod.authors.length ? escapeHtml(mod.authors.join(', ')) : '';
+  const version = mod.version && mod.version !== 'Unknown' ? escapeHtml(mod.version) : '';
+
+  card.innerHTML = `
+    ${icon}
+    <div class="mod-info">
+      <div class="mod-name">${escapeHtml(mod.name)}</div>
+      ${version ? `<div class="mod-meta">${version}</div>` : ''}
+      ${authors ? `<div class="mod-authors">${authors}</div>` : ''}
+      ${mod.description ? `<div class="mod-desc">${escapeHtml(mod.description)}</div>` : ''}
+    </div>
+  `;
+  return card;
+}
+
+function filterMods() {
+  const query = $('mods-search').value.trim().toLowerCase();
+  document.querySelectorAll('.modpack-group').forEach(group => {
+    let visibleCount = 0;
+    group.querySelectorAll('.mod-card').forEach(card => {
+      const name = card.querySelector('.mod-name')?.textContent.toLowerCase() || '';
+      const match = !query || name.includes(query);
+      card.style.display = match ? '' : 'none';
+      if (match) visibleCount++;
+    });
+    group.style.display = visibleCount === 0 && query ? 'none' : '';
   });
 }
