@@ -99,7 +99,7 @@ export function updateVersionBadges() {
 
   const modsBadge = $('mods-badge');
   if (prof.modsVersion) {
-    modsBadge.textContent = 'Mods v' + prof.modsVersion;
+    modsBadge.textContent = 'Mods v' + prof.modsVersion.slice(0, 7);
   } else {
     modsBadge.textContent = 'Sem mods';
   }

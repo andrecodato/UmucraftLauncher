@@ -1,16 +1,20 @@
 /* ─── PROFILE / SERVER CARDS (Home) ──────────────────────────────────────── */
 .profile-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 10px;
+  display: flex; gap: 10px;
+  overflow-x: auto; overflow-y: hidden;
+  padding: 2px 2px 12px;
+  scrollbar-width: thin;
 }
 .profile-card {
-  background: var(--bg-card); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 14px 16px;
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s;
+  flex: 0 0 auto; width: 220px;
+  background: rgba(22,27,34,0.82);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 12px 14px;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
 }
-.profile-card:hover { border-color: var(--border-bright); }
+.profile-card:hover { border-color: var(--border-bright); transform: translateY(-1px); }
 .profile-card.selected {
   border-color: var(--accent);
   box-shadow: 0 0 0 1px var(--accent), 0 0 16px var(--accent-dim);
