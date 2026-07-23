@@ -48,7 +48,17 @@ def zip_profile_mods(mods_dir: Path, dest_zip: Path) -> str:
     with zipfile.ZipFile(tmp_path, "w", zipfile.ZIP_DEFLATED) as zf:
         for jar in sorted(mods_dir.glob("*.jar")):
             zf.write(jar, arcname=jar.name)
-    md5 = hashlib.md5(tmp_path.read_bytes()).hexdigest()
+
+    # read_bytes() would load the whole zip into memory at once — fine for a
+    # small pack, but a few hundred MB of mods.zip on a Pi with <1GB RAM
+    # trips the OOM killer (seen in production with a 300-mod/~650MB pack).
+    # Hash incrementally instead so peak memory stays at one chunk.
+    hasher = hashlib.md5()
+    with open(tmp_path, "rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            hasher.update(chunk)
+    md5 = hasher.hexdigest()
+
     # mkstemp() creates the file 0600 (owner-only); nginx (www-data) needs to
     # read it, so open it up before the rename replaces the public mods.zip.
     os.chmod(tmp_path, 0o644)
