@@ -18,7 +18,7 @@ export async function loadManifest(silent = true) {
 
 export function populateManifestUI(m, cached) {
   $('server-name').textContent = m.serverName || 'UmuCraft';
-  $('server-description').textContent = m.description || (cached ? '(dados em cache)' : 'Launcher Minecraft Offline');
+  $('server-description').textContent = m.description || (cached ? '(dados em cache)' : 'Launcher Minecraft');
 
   // Tags
   const tagsEl = $('hero-tags');
