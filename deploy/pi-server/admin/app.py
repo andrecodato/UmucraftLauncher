@@ -190,7 +190,7 @@ async function rebuild(name, btn) {
   const msg = document.getElementById('msg-' + name);
   msg.textContent = 'Reconstruindo...';
   try {
-    const res = await fetch('/rebuild/' + encodeURIComponent(name), { method: 'POST' });
+    const res = await fetch('/admin/rebuild/' + encodeURIComponent(name), { method: 'POST' });
     const data = await res.json();
     msg.textContent = data.ok ? 'Feito! Recarregando...' : 'Erro.';
     if (data.ok) setTimeout(() => location.reload(), 800);
