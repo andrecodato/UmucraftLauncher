@@ -1,0 +1,10 @@
+[Unit]
+Description=Umucraft Launcher - checa release nova do launcher no GitHub
+
+[Service]
+Type=oneshot
+User={{SAMBA_USER}}
+Group={{SAMBA_USER}}
+Environment=UMU_WWW_DIR={{UMU_ROOT}}/www
+Environment=UMU_GITHUB_REPO=andrecodato/UmucraftLauncher
+ExecStart={{UMU_ROOT}}/venv/bin/python3 {{UMU_ROOT}}/pull-launcher-release.py

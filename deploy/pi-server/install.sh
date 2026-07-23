@@ -38,6 +38,9 @@ chown -R "$SAMBA_USER":"$SAMBA_USER" "$UMU_ROOT/venv"
 cp "$SCRIPT_DIR/watcher.py" "$UMU_ROOT/watcher.py"
 chown "$SAMBA_USER":"$SAMBA_USER" "$UMU_ROOT/watcher.py"
 
+cp "$SCRIPT_DIR/pull-launcher-release.py" "$UMU_ROOT/pull-launcher-release.py"
+chown "$SAMBA_USER":"$SAMBA_USER" "$UMU_ROOT/pull-launcher-release.py"
+
 mkdir -p /etc/umucraft
 if [[ ! -f /etc/umucraft/watcher.env ]]; then
   cp "$SCRIPT_DIR/config.env.example" /etc/umucraft/watcher.env
@@ -64,6 +67,12 @@ echo ">> Instalando servico systemd do watcher..."
 sed "s#{{UMU_ROOT}}#$UMU_ROOT#g; s#{{SAMBA_USER}}#$SAMBA_USER#g" "$SCRIPT_DIR/umucraft-watcher.service" > /etc/systemd/system/umucraft-watcher.service
 systemctl daemon-reload
 systemctl enable --now umucraft-watcher
+
+echo ">> Instalando timer do puller de releases do launcher..."
+sed "s#{{UMU_ROOT}}#$UMU_ROOT#g; s#{{SAMBA_USER}}#$SAMBA_USER#g" "$SCRIPT_DIR/umucraft-launcher-pull.service" > /etc/systemd/system/umucraft-launcher-pull.service
+cp "$SCRIPT_DIR/umucraft-launcher-pull.timer" /etc/systemd/system/umucraft-launcher-pull.timer
+systemctl daemon-reload
+systemctl enable --now umucraft-launcher-pull.timer
 
 echo ""
 echo "======================================================"

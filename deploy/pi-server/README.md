@@ -100,12 +100,65 @@ Rebuild/redistribua o launcher (`npm run build`) para os players pegarem a nova 
 - **Criar um servidor novo:** crie a pasta `\\microlab\modpacks\<Nome do Novo Perfil>\`, solte `mods\` + `instance.json` lá dentro, e adicione `host`/`port` à mão na entrada correspondente do `manifest.json` (único campo que o watcher não preenche sozinho).
 - **Publicar um mapa antigo:** arraste a pasta do mundo (ou um `.zip` dela) para `\\microlab\umucraft-public\maps\`. Fica disponível em `https://updates.SEUDOMINIO.com/maps/`.
 - **Editar notícias/descrição:** edite `manifest.json` direto em `\\microlab\umucraft-public\manifest.json` — o watcher só mexe nos campos de mods/versão/loader de cada perfil, o resto (`news`, `serverName`, `host`, `port`, etc) fica intocado.
-- **Publicar uma versão nova do launcher (.exe):** bump o `version` em `package.json` e rode `npm run publish-launcher` do seu PC — builda e sobe pro Pi (`\srv\umucraft\www\launcher\`) sozinho. Quem já tem o launcher aberto recebe a atualização e reinicia sozinho no próximo boot do app.
+- **Publicar uma versão nova do launcher (.exe):** bump o `version` em `package.json`, commit, e crie/dê push numa tag `vX.Y.Z` igual à versão. O GitHub Actions builda e publica uma Release sozinho; o timer `umucraft-launcher-pull` no Pi (roda a cada 5 min) detecta a release nova e publica em `/srv/umucraft/www/launcher/` automaticamente — nenhum passo manual no Pi. Quem já tem o launcher aberto recebe a atualização e reinicia sozinho no próximo boot do app. (`npm run publish-launcher` continua funcionando como fallback manual/imediato, caso precise pular a fila do Actions.)
 
 ## Logs / troubleshooting
 
 ```bash
 sudo journalctl -u umucraft-watcher -f
+sudo journalctl -u umucraft-launcher-pull -f
 sudo journalctl -u cloudflared -f
-sudo systemctl status nginx smbd umucraft-watcher cloudflared
+sudo systemctl status nginx smbd umucraft-watcher umucraft-launcher-pull.timer cloudflared
+```
+
+Forçar uma checagem de release fora do timer (útil pra testar sem esperar os 5 min):
+
+```bash
+sudo systemctl start umucraft-launcher-pull
+```
+
+---
+
+## Publicação automática do launcher via GitHub Actions
+
+Além do watcher de mods, o Pi roda um segundo serviço, `umucraft-launcher-pull`
+(timer systemd, a cada 5 min), que fica de olho na release mais recente do
+repositório no GitHub e publica sozinho em `www/launcher/`:
+
+```
+git: bump version + tag vX.Y.Z + push
+  -> GitHub Actions (.github/workflows/release-launcher.yml) builda o .exe
+     num runner windows-latest e publica como GitHub Release
+  -> Pi (pull-launcher-release.py, via timer) detecta a release nova,
+     baixa os assets e substitui www/launcher/ (sem SSH, sem porta aberta —
+     o Pi so faz requisicoes de saida pra API publica do GitHub)
+```
+
+Isso mantém a mesma postura de segurança do resto do setup (Cloudflare
+Tunnel, sem inbound): o Pi nunca recebe conexão de fora pra publicar,
+só puxa.
+
+**Deploy inicial desses dois arquivos num Pi já configurado** (sem
+precisar rodar o `install.sh` inteiro de novo):
+
+```bash
+scp deploy/pi-server/pull-launcher-release.py deploy/pi-server/umucraft-launcher-pull.service deploy/pi-server/umucraft-launcher-pull.timer andrecodato@microlab:~/pi-server/
+ssh andrecodato@microlab
+sudo cp ~/pi-server/pull-launcher-release.py /srv/umucraft/pull-launcher-release.py
+sudo chown andrecodato:andrecodato /srv/umucraft/pull-launcher-release.py
+sudo sed "s#{{UMU_ROOT}}#/srv/umucraft#g; s#{{SAMBA_USER}}#andrecodato#g" ~/pi-server/umucraft-launcher-pull.service > /etc/systemd/system/umucraft-launcher-pull.service
+sudo cp ~/pi-server/umucraft-launcher-pull.timer /etc/systemd/system/umucraft-launcher-pull.timer
+sudo systemctl daemon-reload
+sudo systemctl enable --now umucraft-launcher-pull.timer
+```
+
+**Pra publicar uma versão nova a partir daqui:**
+```bash
+# no repo, local
+# 1. bump "version" em package.json e commit
+git tag v1.0.1
+git push origin v1.0.1
+# 2. acompanhe o build em github.com/andrecodato/UmucraftLauncher/actions
+# 3. em ate 5 min o Pi pega a release sozinho — ou force com:
+#    ssh andrecodato@microlab sudo systemctl start umucraft-launcher-pull
 ```

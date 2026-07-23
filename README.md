@@ -233,9 +233,12 @@ Na próxima vez que um player abrir o launcher, o pacote de mods será baixado e
 
 O launcher em si (não só os mods) se atualiza sozinho via `electron-updater`, usando o mesmo servidor do Pi como feed de update (`https://umucraft-updates.codato.dev/launcher/`). Isso é checado uma vez na janela de bootstrap, antes do check de Java — se tiver versão nova, baixa e reinicia sozinho (silencioso); se não tiver, ou a checagem falhar (sem internet, Pi fora do ar), o launcher segue normal sem travar a inicialização.
 
-**Pra publicar uma versão nova:**
-1. Bump o campo `version` em `package.json`
-2. `npm run publish-launcher` — builda e sobe pro Pi automaticamente (pede a senha do sudo)
+**Pra publicar uma versão nova (automático via git):**
+1. Bump o campo `version` em `package.json`, commit
+2. Crie e dê push numa tag igual à versão: `git tag v1.0.1 && git push origin v1.0.1`
+3. O GitHub Actions (`.github/workflows/release-launcher.yml`) builda o `.exe` e publica como GitHub Release; o Pi (`deploy/pi-server/pull-launcher-release.py`, via timer systemd a cada 5 min) detecta a release nova e publica sozinho no feed — veja `deploy/pi-server/README.md` pro deploy inicial desses dois arquivos
+
+`npm run publish-launcher` continua disponível como atalho manual (builda local e sobe via SSH na hora, sem esperar o Actions).
 
 Os players que já tiverem o launcher aberto recebem a atualização no próximo restart, sem precisar baixar/reinstalar nada na mão. Configuração fica em `package.json` → `build.publish` (provider `generic` apontando pro feed).
 
