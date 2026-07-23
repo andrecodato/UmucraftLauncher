@@ -49,6 +49,9 @@ def zip_profile_mods(mods_dir: Path, dest_zip: Path) -> str:
         for jar in sorted(mods_dir.glob("*.jar")):
             zf.write(jar, arcname=jar.name)
     md5 = hashlib.md5(tmp_path.read_bytes()).hexdigest()
+    # mkstemp() creates the file 0600 (owner-only); nginx (www-data) needs to
+    # read it, so open it up before the rename replaces the public mods.zip.
+    os.chmod(tmp_path, 0o644)
     tmp_path.replace(dest_zip)
     return md5
 
