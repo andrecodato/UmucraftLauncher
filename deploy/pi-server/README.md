@@ -162,3 +162,45 @@ git push origin v1.0.1
 # 3. em ate 5 min o Pi pega a release sozinho — ou force com:
 #    ssh andrecodato@microlab sudo systemctl start umucraft-launcher-pull
 ```
+
+---
+
+## Painel admin
+
+Uma página em `https://updates.SEUDOMINIO.com/admin/` (Flask + waitress,
+`deploy/pi-server/admin/app.py`) que mostra, sem precisar de SSH:
+
+- Estado dos serviços (`umucraft-watcher`, `umucraft-launcher-pull.timer`,
+  `nginx`, `smbd`, `cloudflared`)
+- Cada perfil do `manifest.json`: versão do MC/loader, versão dos mods,
+  tamanho e data do `mods.zip`
+- Final do log do `umucraft-watcher` e do `umucraft-launcher-pull`
+- Botão **Forçar rebuild** por perfil — útil se você quer republicar sem
+  esperar o debounce, ou depois de corrigir um mod com problema sem tocar
+  em mais nenhum arquivo (o que não disparia o watcher sozinho)
+
+O processo Flask/waitress escuta só em `127.0.0.1:8787` — nunca é exposto
+direto, só via nginx com autenticação básica em `/admin/`.
+
+**Deploy inicial num Pi já configurado** (sem rodar o `install.sh` de novo):
+
+```bash
+scp -r deploy/pi-server/admin andrecodato@microlab:~/pi-server/admin
+scp deploy/pi-server/umucraft-admin.service deploy/pi-server/nginx-umucraft.conf andrecodato@microlab:~/pi-server/
+ssh andrecodato@microlab
+
+mkdir -p /srv/umucraft/admin
+cp ~/pi-server/admin/app.py /srv/umucraft/admin/app.py
+/srv/umucraft/venv/bin/pip install --quiet flask waitress
+
+sudo cp ~/pi-server/nginx-umucraft.conf /etc/nginx/sites-available/umucraft.conf
+sudo htpasswd -c /etc/nginx/.htpasswd-umucraft-admin admin   # cria a senha do painel
+sudo nginx -t && sudo systemctl reload nginx
+
+sudo sed "s#{{UMU_ROOT}}#/srv/umucraft#g; s#{{SAMBA_USER}}#andrecodato#g" ~/pi-server/umucraft-admin.service > /etc/systemd/system/umucraft-admin.service
+sudo systemctl daemon-reload
+sudo systemctl enable --now umucraft-admin
+```
+
+(`apache2-utils` precisa estar instalado pro comando `htpasswd` existir —
+`sudo apt-get install -y apache2-utils` se ainda não tiver.)
