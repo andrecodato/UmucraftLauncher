@@ -64,9 +64,9 @@ def download(url: str, dest: Path) -> None:
 def sync_release(release: dict) -> None:
     tag = release["tag_name"]
     assets = release.get("assets", [])
-    wanted = [a for a in assets if a["name"].endswith((".exe", ".blockmap", ".yml"))]
+    wanted = [a for a in assets if a["name"].endswith((".exe", ".blockmap", ".yml", ".AppImage"))]
     if not wanted:
-        log.warning("Release %s nao tem assets de launcher (.exe/.blockmap/.yml), ignorando", tag)
+        log.warning("Release %s nao tem assets de launcher (.exe/.blockmap/.yml/.AppImage), ignorando", tag)
         return
 
     log.info("Nova release %s, baixando %d asset(s)...", tag, len(wanted))
@@ -82,7 +82,7 @@ def sync_release(release: dict) -> None:
         for existing in LAUNCHER_DIR.iterdir():
             if existing.name in new_names or existing.name == STATE_PATH.name:
                 continue
-            if existing.suffix in (".exe", ".blockmap", ".yml"):
+            if existing.suffix in (".exe", ".blockmap", ".yml", ".AppImage"):
                 existing.unlink()
 
     STATE_PATH.write_text(tag, encoding="utf-8")
