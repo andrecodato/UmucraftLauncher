@@ -7,8 +7,15 @@ const { JAVA_VERSIONS, BASE_DIR } = require('../utils/paths');
 const { send, log } = require('../utils/ipcSender');
 const { downloadFile } = require('../utils/download');
 const { httpGetJson } = require('../utils/http');
+const { mapWithConcurrency } = require('../utils/concurrency');
 const state = require('../state');
 const RuntimeDetector = require('../bootstrap/detector');
+
+// Minecraft/Forge/NeoForge ship thousands of small library/asset files;
+// downloading them one at a time makes latency (not bandwidth) the
+// bottleneck. This many in flight at once is a big speedup without
+// hammering Mojang's CDN.
+const DOWNLOAD_CONCURRENCY = 16;
 
 function getRequiredJavaVersion(minecraftVersion, javaMajorHint) {
   if (javaMajorHint) {
@@ -123,10 +130,10 @@ function resolveLibraryPath(lib, librariesDir) {
 }
 
 /**
- * Download missing libraries.
+ * Download missing libraries, `DOWNLOAD_CONCURRENCY` at a time.
  */
 async function ensureLibraries(libraries, librariesDir) {
-  let downloaded = 0;
+  const missing = [];
   for (const lib of libraries) {
     if (!isAllowed(lib.rules)) continue;
 
@@ -135,17 +142,23 @@ async function ensureLibraries(libraries, librariesDir) {
 
     if (!fs.existsSync(libPath)) {
       const url = lib.downloads?.artifact?.url;
-      if (url) {
-        fs.mkdirSync(path.dirname(libPath), { recursive: true });
-        const name = path.basename(libPath);
-        await downloadFile(url, libPath, `Lib: ${name}`);
-        downloaded++;
-      }
+      if (url) missing.push({ url, libPath });
     }
   }
-  if (downloaded > 0) {
-    log(`Baixadas ${downloaded} libraries faltantes.`);
-  }
+
+  if (missing.length === 0) return;
+
+  let completed = 0;
+  await mapWithConcurrency(missing, DOWNLOAD_CONCURRENCY, async ({ url, libPath }) => {
+    fs.mkdirSync(path.dirname(libPath), { recursive: true });
+    await downloadFile(url, libPath, `Lib: ${path.basename(libPath)}`, { silent: true });
+    completed++;
+    const pct = Math.round((completed / missing.length) * 100);
+    send('download-progress', { label: 'Libraries', percent: pct, downloaded: completed, total: missing.length });
+    send('status', `Baixando libraries... ${pct}% (${completed}/${missing.length})`);
+  });
+
+  log(`Baixadas ${missing.length} libraries faltantes.`);
 }
 
 /**
@@ -192,16 +205,17 @@ async function ensureAssets(assetIndex, assetsDir) {
 
   log(`${missing.length} assets faltantes de ${total} total. Baixando...`);
 
-  for (let i = 0; i < missing.length; i++) {
-    const { hash, prefix, objDir, objPath } = missing[i];
+  let completed = 0;
+  await mapWithConcurrency(missing, DOWNLOAD_CONCURRENCY, async ({ hash, prefix, objDir, objPath }) => {
     fs.mkdirSync(objDir, { recursive: true });
     const url = `https://resources.download.minecraft.net/${prefix}/${hash}`;
     await downloadFile(url, objPath, 'Assets', { silent: true });
 
-    const pct = Math.round(((i + 1) / missing.length) * 100);
-    send('download-progress', { label: 'Assets', percent: pct, downloaded: i + 1, total: missing.length });
-    send('status', `Baixando assets... ${pct}% (${i + 1}/${missing.length})`);
-  }
+    completed++;
+    const pct = Math.round((completed / missing.length) * 100);
+    send('download-progress', { label: 'Assets', percent: pct, downloaded: completed, total: missing.length });
+    send('status', `Baixando assets... ${pct}% (${completed}/${missing.length})`);
+  });
 
   log(`Baixados ${missing.length} assets faltantes de ${total} total.`);
 }
