@@ -249,10 +249,29 @@ class ModsHandler(FileSystemEventHandler):
             self.rebuilder.schedule(profile_name)
 
 
+def cleanup_orphaned_tmp_files() -> None:
+    """Remove *.zip.tmp/tmp*.zip/*.json.tmp left behind by a run that got
+    killed mid-write (OOM, crash, manual kill) before it could rename the
+    file into place. Safe to run on startup: nothing is mid-write yet."""
+    if not WWW_DIR.is_dir():
+        return
+    removed = 0
+    for pattern in ("profiles/*/tmp*.zip", "profiles/*/*.json.tmp"):
+        for path in WWW_DIR.glob(pattern):
+            try:
+                path.unlink()
+                removed += 1
+            except OSError:
+                pass
+    if removed:
+        log.info("Removidos %d arquivo(s) temporario(s) orfao(s) de uma execucao anterior.", removed)
+
+
 def main():
     STAGING_DIR.mkdir(parents=True, exist_ok=True)
     WWW_DIR.mkdir(parents=True, exist_ok=True)
     (WWW_DIR / "maps").mkdir(parents=True, exist_ok=True)
+    cleanup_orphaned_tmp_files()
 
     rebuilder = DebouncedRebuilder(DEBOUNCE_SECONDS)
     handler = ModsHandler(rebuilder)

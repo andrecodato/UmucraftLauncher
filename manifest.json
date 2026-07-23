@@ -1,27 +1,15 @@
 {
   "profiles": {
-    "Umucraft Modded 2026": {
+    "UmucraftModdedReborn": {
+      "modsVersion": "6b3b6481f30d8c60f41ccbd285b510b7",
+      "modsZipMd5": "6b3b6481f30d8c60f41ccbd285b510b7",
+      "modsZipUrl": "https://umucraft-updates.codato.dev/profiles/UmucraftModdedReborn/mods.zip",
       "minecraftVersion": "1.21.1",
       "loader": "neoforge",
-      "loaderVersion": "21.1.233",
+      "loaderVersion": "21.1.243",
       "javaMajor": 21,
-      "host": "plus-07.bedhosting.com.br",
-      "port": 21236,
-      "versionJsonUrl": "https://umucraft-updates.codato.dev/profiles/Umucraft%20Modded%202026/version.json",
-      "versionJsonMd5": "",
-      "modsVersion": "1.0.0",
-      "modsZipUrl": "https://www.dropbox.com/scl/fi/88gxad7owrm5a2k0rad1r/UmucraftModded2026-v1.zip?rlkey=vaxjg7bd0am30owskg44txfr4&st=au989b02&dl=1",
-      "modsZipMd5": "33a78248ba30c446c000136f9e188aa066589109"
-    },
-    "Umucraft Vanilla": {
-      "minecraftVersion": "1.21.1",
-      "loader": "vanilla",
-      "loaderVersion": null,
-      "host": "vanilla.umucraft.com",
-      "port": 25565,
-      "modsVersion": "1.0.0",
-      "modsZipUrl": "",
-      "modsZipMd5": ""
+      "versionJsonUrl": "https://umucraft-updates.codato.dev/profiles/UmucraftModdedReborn/version.json",
+      "versionJsonMd5": "8eb6a3cf26b9f1375c90e23b08a1b3ef"
     }
   }
 }
