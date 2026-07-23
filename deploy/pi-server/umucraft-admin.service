@@ -1,0 +1,16 @@
+[Unit]
+Description=Umucraft Launcher - painel admin
+After=network.target
+
+[Service]
+Type=simple
+User={{SAMBA_USER}}
+Group={{SAMBA_USER}}
+EnvironmentFile=/etc/umucraft/watcher.env
+WorkingDirectory={{UMU_ROOT}}/admin
+ExecStart={{UMU_ROOT}}/venv/bin/python3 {{UMU_ROOT}}/admin/app.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

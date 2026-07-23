@@ -14,9 +14,9 @@ fi
 
 echo ">> Usuario samba/dono dos arquivos: $SAMBA_USER"
 
-echo ">> Instalando pacotes (samba, nginx, python3-venv)..."
+echo ">> Instalando pacotes (samba, nginx, python3-venv, apache2-utils)..."
 apt-get update
-apt-get install -y samba nginx python3-venv python3-pip
+apt-get install -y samba nginx python3-venv python3-pip apache2-utils
 
 echo ">> Criando estrutura de diretorios em $UMU_ROOT..."
 mkdir -p "$UMU_ROOT/staging/profiles"
@@ -32,7 +32,7 @@ chown -R "$SAMBA_USER":"$SAMBA_USER" "$UMU_ROOT"
 
 echo ">> Criando virtualenv Python para o watcher..."
 python3 -m venv "$UMU_ROOT/venv"
-"$UMU_ROOT/venv/bin/pip" install --quiet --upgrade pip watchdog
+"$UMU_ROOT/venv/bin/pip" install --quiet --upgrade pip watchdog flask waitress
 chown -R "$SAMBA_USER":"$SAMBA_USER" "$UMU_ROOT/venv"
 
 cp "$SCRIPT_DIR/watcher.py" "$UMU_ROOT/watcher.py"
@@ -40,6 +40,10 @@ chown "$SAMBA_USER":"$SAMBA_USER" "$UMU_ROOT/watcher.py"
 
 cp "$SCRIPT_DIR/pull-launcher-release.py" "$UMU_ROOT/pull-launcher-release.py"
 chown "$SAMBA_USER":"$SAMBA_USER" "$UMU_ROOT/pull-launcher-release.py"
+
+mkdir -p "$UMU_ROOT/admin"
+cp "$SCRIPT_DIR/admin/app.py" "$UMU_ROOT/admin/app.py"
+chown -R "$SAMBA_USER":"$SAMBA_USER" "$UMU_ROOT/admin"
 
 mkdir -p /etc/umucraft
 if [[ ! -f /etc/umucraft/watcher.env ]]; then
@@ -74,6 +78,11 @@ cp "$SCRIPT_DIR/umucraft-launcher-pull.timer" /etc/systemd/system/umucraft-launc
 systemctl daemon-reload
 systemctl enable --now umucraft-launcher-pull.timer
 
+echo ">> Instalando servico do painel admin..."
+sed "s#{{UMU_ROOT}}#$UMU_ROOT#g; s#{{SAMBA_USER}}#$SAMBA_USER#g" "$SCRIPT_DIR/umucraft-admin.service" > /etc/systemd/system/umucraft-admin.service
+systemctl daemon-reload
+systemctl enable --now umucraft-admin
+
 echo ""
 echo "======================================================"
 echo " Instalacao base concluida!"
@@ -85,6 +94,9 @@ echo "       sudo smbpasswd -a $SAMBA_USER"
 echo "  2. Configure o Cloudflare Tunnel (veja README.md nesta pasta)."
 echo "  3. Edite /etc/umucraft/watcher.env com a URL publica final e rode:"
 echo "       sudo systemctl restart umucraft-watcher"
+echo "  4. Crie a senha do painel admin (fica em /admin/ atras do nginx):"
+echo "       sudo htpasswd -c /etc/nginx/.htpasswd-umucraft-admin admin"
+echo "       sudo nginx -t && sudo systemctl reload nginx"
 echo ""
 echo "Shares Samba criados: \\\\$(hostname)\\modpacks  e  \\\\$(hostname)\\umucraft-public"
 echo ""
