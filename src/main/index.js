@@ -4,7 +4,9 @@ const { ensureDirectories, BASE_DIR } = require('./utils/paths');
 const { createMainWindow } = require('./windows/mainWindow');
 const { createBootstrapWindow } = require('./windows/bootstrapWindow');
 const { ensureDefaultProfile } = require('./services/profileService');
+const { checkForAppUpdate } = require('./services/appUpdater');
 const BootstrapController = require('./bootstrap/controller');
+const BootstrapLogger = require('./bootstrap/logger');
 const state = require('./state');
 
 // Register all IPC handlers
@@ -24,13 +26,19 @@ registerUtilIpc();
 
 // ─── BOOTSTRAP ──────────────────────────────────────────────────────────────
 async function runBootstrap() {
-  state.bootstrapCtrl = new BootstrapController(BASE_DIR);
-
   await new Promise((resolve) => {
     state.bootstrapWindow.webContents.once('did-finish-load', resolve);
   });
 
-  state.bootstrapCtrl.setSender(state.bootstrapWindow.webContents);
+  const logger = new BootstrapLogger(BASE_DIR);
+  logger.setSender(state.bootstrapWindow.webContents);
+
+  if (app.isPackaged) {
+    const updated = await checkForAppUpdate(logger);
+    if (updated) return; // app is restarting to install the new version
+  }
+
+  state.bootstrapCtrl = new BootstrapController(BASE_DIR, logger);
 
   const result = await state.bootstrapCtrl.run();
 

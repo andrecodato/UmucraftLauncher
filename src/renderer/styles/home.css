@@ -54,7 +54,9 @@
   background: var(--bg-card); border: 1px solid var(--border);
   color: var(--text-dim);
 }
-.badge.forge { color: var(--forge); border-color: #f9731644; background: #f9731611; }
+.badge.loader-forge { color: var(--forge); border-color: #f9731644; background: #f9731611; }
+.badge.loader-neoforge { color: var(--neoforge); border-color: #e6803d44; background: #e6803d11; }
+.badge.loader-fabric { color: var(--fabric); border-color: #dbb69b44; background: #dbb69b11; }
 .badge.java { color: var(--java-col); border-color: #60a5fa44; background: #60a5fa11; }
 .badge.mods { color: var(--accent); border-color: var(--border-bright); background: var(--accent-glow); }
 

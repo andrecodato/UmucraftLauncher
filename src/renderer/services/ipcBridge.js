@@ -15,6 +15,7 @@ export function setupIpcListeners() {
     const labels = {
       'java-check': 'Verificando Java...',
       java: 'Verificando Java...',
+      loader: 'Instalando loader...',
       mods: 'Sincronizando mods...',
       launch: 'Iniciando Minecraft...',
     };

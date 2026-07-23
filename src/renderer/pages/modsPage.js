@@ -1,4 +1,4 @@
-import { $ } from '../helpers.js';
+import { $, capitalize } from '../helpers.js';
 import { appState } from '../store/state.js';
 
 export function populateModsTab() {
@@ -34,11 +34,11 @@ export function populateModsTab() {
     nameEl.textContent = `Minecraft ${prof.minecraftVersion || '?'}`;
     card.appendChild(nameEl);
 
-    if (prof.forgeVersion) {
-      const forgeEl = document.createElement('div');
-      forgeEl.className = 'mod-meta';
-      forgeEl.textContent = `Forge ${prof.forgeVersion}`;
-      card.appendChild(forgeEl);
+    if (prof.loader && prof.loader !== 'vanilla' && prof.loaderVersion) {
+      const loaderEl = document.createElement('div');
+      loaderEl.className = 'mod-meta';
+      loaderEl.textContent = `${capitalize(prof.loader)} ${prof.loaderVersion}`;
+      card.appendChild(loaderEl);
     }
 
     if (prof.modsVersion) {

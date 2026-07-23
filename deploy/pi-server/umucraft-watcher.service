@@ -1,0 +1,15 @@
+[Unit]
+Description=Umucraft Launcher - watcher de auto-update de mods
+After=network.target
+
+[Service]
+Type=simple
+User={{SAMBA_USER}}
+Group={{SAMBA_USER}}
+EnvironmentFile=/etc/umucraft/watcher.env
+ExecStart={{UMU_ROOT}}/venv/bin/python3 {{UMU_ROOT}}/watcher.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

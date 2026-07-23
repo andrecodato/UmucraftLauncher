@@ -10,7 +10,10 @@ const { httpGetJson } = require('../utils/http');
 const state = require('../state');
 const RuntimeDetector = require('../bootstrap/detector');
 
-function getRequiredJavaVersion(minecraftVersion) {
+function getRequiredJavaVersion(minecraftVersion, javaMajorHint) {
+  if (javaMajorHint) {
+    return { version: String(javaMajorHint), major: javaMajorHint };
+  }
   for (const [prefix, info] of Object.entries(JAVA_VERSIONS)) {
     if (minecraftVersion.startsWith(prefix)) return info;
   }
@@ -268,17 +271,16 @@ function resolveArg(arg, vars) {
   return null;
 }
 
-async function launchMinecraft({ javaPath, minecraftDir, ram, username, mcVersion, forgeVersion }) {
-  const librariesDir = path.join(minecraftDir, 'libraries');
-  const versionsDir = path.join(minecraftDir, 'versions');
-  const assetsDir = path.join(minecraftDir, 'assets');
-  const nativesDir = path.join(versionsDir, mcVersion, 'natives');
+async function launchMinecraft({ javaPath, gameRoot, instanceDir, ram, username, mcVersion, versionId }) {
+  const librariesDir = path.join(gameRoot, 'libraries');
+  const versionsDir = path.join(gameRoot, 'versions');
+  const assetsDir = path.join(gameRoot, 'assets');
+  const nativesDir = path.join(versionsDir, versionId, 'natives');
   fs.mkdirSync(nativesDir, { recursive: true });
+  fs.mkdirSync(instanceDir, { recursive: true });
 
-  const forgeVersionId = forgeVersion ? `${mcVersion}-forge-${forgeVersion}` : mcVersion;
-
-  log(`Loading version JSON: ${forgeVersionId}`);
-  const versionData = loadVersionJson(versionsDir, forgeVersionId);
+  log(`Loading version JSON: ${versionId}`);
+  const versionData = loadVersionJson(versionsDir, versionId);
 
   // Ensure all libraries are downloaded
   send('status', 'Verificando libraries...');
@@ -318,8 +320,8 @@ async function launchMinecraft({ javaPath, minecraftDir, ram, username, mcVersio
   // Variable substitutions for arguments
   const vars = {
     auth_player_name: username,
-    version_name: forgeVersionId,
-    game_directory: minecraftDir,
+    version_name: versionId,
+    game_directory: instanceDir,
     assets_root: assetsDir,
     assets_index_name: versionData.assetIndex?.id || mcVersion,
     auth_uuid: '00000000-0000-0000-0000-000000000000',
@@ -374,7 +376,7 @@ async function launchMinecraft({ javaPath, minecraftDir, ram, username, mcVersio
   log(`Classpath entries: ${classpath.length}`);
 
   const child = spawn(javaPath, args, {
-    cwd: minecraftDir,
+    cwd: instanceDir,
     detached: true,
     stdio: ['ignore', 'pipe', 'pipe'],
   });

@@ -14,6 +14,5 @@ export function collectConfig() {
     username: $('username-input').value.trim(),
     ram: parseInt($('ram-slider').value, 10),
     minecraftDir: $('mc-dir-input').value,
-    selectedProfile: $('profile-select').value,
   };
 }

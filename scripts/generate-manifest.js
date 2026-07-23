@@ -54,8 +54,11 @@ if (fs.existsSync(manifestPath)) {
 if (!manifest.profiles) manifest.profiles = {};
 if (!manifest.profiles[profileName]) {
   manifest.profiles[profileName] = {
-    minecraftVersion: '1.20.1',
-    forgeVersion: '47.2.0',
+    minecraftVersion: '1.21.1',
+    loader: 'vanilla',
+    loaderVersion: null,
+    host: '',
+    port: 25565,
   };
 }
 

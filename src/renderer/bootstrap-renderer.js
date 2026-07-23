@@ -11,6 +11,9 @@ const retryBtn = $('retry-btn');
 const logsBtn = $('logs-btn');
 
 const STATE_LABELS = {
+  checking_update:     'Verificando atualizações do launcher...',
+  downloading_update:  'Baixando atualização do launcher...',
+  update_ready:        'Atualização pronta! Reiniciando...',
   checking_bundled:    'Verificando runtime empacotado...',
   checking_system:     'Verificando Java do sistema...',
   checking_common:     'Buscando Java em diretorios comuns...',
@@ -47,7 +50,7 @@ window.bootstrap.on('bootstrap-state', ({ state, detail }) => {
     addLog(detail || label, 'state');
   }
 
-  if (state === 'runtime_found' || state === 'completed') {
+  if (state === 'runtime_found' || state === 'completed' || state === 'update_ready') {
     stateLabel.className = 'state-label success';
     progressBar.className = 'progress-bar';
     progressBar.style.width = '100%';
@@ -59,7 +62,7 @@ window.bootstrap.on('bootstrap-state', ({ state, detail }) => {
     progressBar.style.background = 'var(--danger)';
     spinner.classList.add('hidden');
     actions.classList.remove('hidden');
-  } else if (state === 'downloading_runtime') {
+  } else if (state === 'downloading_runtime' || state === 'downloading_update') {
     progressBar.className = 'progress-bar';
     progressBar.style.width = '0%';
     progressBar.style.background = '';
@@ -71,7 +74,7 @@ window.bootstrap.on('bootstrap-state', ({ state, detail }) => {
 });
 
 window.bootstrap.on('bootstrap-progress', ({ phase, percent, downloaded, total }) => {
-  if (phase === 'downloading') {
+  if (phase === 'downloading' || phase === 'downloading_update') {
     progressBar.className = 'progress-bar';
     progressBar.style.width = percent + '%';
     const dlMB = (downloaded / 1024 / 1024).toFixed(1);

@@ -15,3 +15,7 @@ export function escapeHtml(str) {
   div.textContent = str;
   return div.innerHTML;
 }
+
+export function capitalize(str) {
+  return str ? str.charAt(0).toUpperCase() + str.slice(1) : str;
+}

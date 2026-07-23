@@ -1,6 +1,8 @@
-import { $ } from '../helpers.js';
+import { $, capitalize } from '../helpers.js';
 import { appState } from '../store/state.js';
 import { populateModsTab } from '../pages/modsPage.js';
+import { populateNewsTab } from '../pages/newsPage.js';
+import { createProfileCard, updateProfileCardPing } from '../components/profileCard.js';
 
 export async function loadManifest(silent = true) {
   const result = await window.launcher.fetchManifest();
@@ -28,40 +30,71 @@ export function populateManifestUI(m, cached) {
     tagsEl.appendChild(b);
   });
 
-  // Profile selector
-  const profileSelect = $('profile-select');
-  profileSelect.innerHTML = '';
-  const profiles = m.profiles ? Object.keys(m.profiles) : ['Default'];
-  profiles.forEach(p => {
-    const opt = document.createElement('option');
-    opt.value = p;
-    opt.textContent = p;
-    if (p === appState.config.selectedProfile) opt.selected = true;
-    profileSelect.appendChild(opt);
-  });
-
+  renderProfileCards(m);
   updateVersionBadges();
   populateModsTab();
+  populateNewsTab();
+}
+
+export function renderProfileCards(m) {
+  const container = $('profile-cards');
+  container.innerHTML = '';
+
+  const names = m.profiles ? Object.keys(m.profiles) : [];
+  if (names.length === 0) {
+    container.innerHTML = '<div class="empty-state">Nenhum servidor configurado.</div>';
+    return;
+  }
+
+  if (!names.includes(appState.config.selectedProfile)) {
+    appState.config.selectedProfile = names[0];
+  }
+
+  names.forEach(name => {
+    const prof = m.profiles[name];
+    const card = createProfileCard(name, prof, name === appState.config.selectedProfile);
+    card.addEventListener('click', () => selectProfile(name));
+    container.appendChild(card);
+  });
+
+  names.forEach(async (name, i) => {
+    const prof = m.profiles[name];
+    if (!prof.host) return;
+    try {
+      const result = await window.launcher.pingServer({ host: prof.host, port: prof.port || 25565 });
+      updateProfileCardPing(container.children[i], result);
+    } catch {}
+  });
+}
+
+export function selectProfile(name) {
+  if (!appState.manifest?.profiles?.[name]) return;
+  appState.config.selectedProfile = name;
+  $('profile-cards').querySelectorAll('.profile-card').forEach(el => {
+    el.classList.toggle('selected', el.dataset.profile === name);
+  });
+  updateVersionBadges();
 }
 
 export function updateVersionBadges() {
   if (!appState.manifest) return;
-  const profileName = $('profile-select').value;
-  const prof = appState.manifest.profiles?.[profileName] || appState.manifest;
+  const prof = appState.manifest.profiles?.[appState.config.selectedProfile];
+  if (!prof) return;
 
   $('mc-version-badge').textContent = 'MC ' + (prof.minecraftVersion || '?');
 
-  const forgeBadge = $('forge-badge');
-  if (prof.forgeVersion) {
-    forgeBadge.textContent = 'Forge ' + prof.forgeVersion;
-    forgeBadge.style.display = '';
+  const loaderBadge = $('loader-badge');
+  if (prof.loader && prof.loader !== 'vanilla' && prof.loaderVersion) {
+    loaderBadge.textContent = capitalize(prof.loader) + ' ' + prof.loaderVersion;
+    loaderBadge.className = 'badge loader-' + prof.loader;
+    loaderBadge.style.display = '';
   } else {
-    forgeBadge.style.display = 'none';
+    loaderBadge.style.display = 'none';
   }
 
   const mcVer = prof.minecraftVersion || '1.21';
-  let javaVer = '17';
-  if (mcVer.startsWith('1.20') || mcVer.startsWith('1.21')) javaVer = '21';
+  let javaVer = prof.javaMajor ? String(prof.javaMajor) : '17';
+  if (!prof.javaMajor && (mcVer.startsWith('1.20') || mcVer.startsWith('1.21'))) javaVer = '21';
   $('java-badge').textContent = 'Java ' + javaVer;
 
   const modsBadge = $('mods-badge');

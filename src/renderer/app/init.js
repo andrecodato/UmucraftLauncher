@@ -7,7 +7,6 @@ import { setupTitlebar } from '../components/titlebar.js';
 import { setupSidebar } from '../components/sidebar.js';
 import { hideLoadingOverlay } from '../components/loadingOverlay.js';
 import { setupHomePage } from '../pages/homePage.js';
-import { setupServersPage, refreshServers } from '../pages/serversPage.js';
 import { setupDiscordPage } from '../pages/discordPage.js';
 import { setupSettingsPage } from '../pages/settingsPage.js';
 import { populateTipsTab } from '../pages/tipsPage.js';
@@ -18,7 +17,6 @@ async function init() {
   setupSidebar();
   setupIpcListeners();
   setupHomePage();
-  setupServersPage();
   setupDiscordPage();
   setupSettingsPage();
 
@@ -39,7 +37,6 @@ async function init() {
 
   // Populate static tabs
   populateTipsTab();
-  refreshServers();
 
   // Hide loading overlay (bootstrap already handled startup)
   hideLoadingOverlay();

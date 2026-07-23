@@ -1,17 +1,11 @@
 import { $, logLine } from '../helpers.js';
 import { appState } from '../store/state.js';
 import { collectConfig } from '../services/configService.js';
-import { loadManifest, updateVersionBadges } from '../services/manifestClient.js';
+import { loadManifest } from '../services/manifestClient.js';
 
 export function setupHomePage() {
   // Launch button
   $('launch-btn').addEventListener('click', startLaunch);
-
-  // Profile selector updates badges
-  $('profile-select').addEventListener('change', () => {
-    appState.config.selectedProfile = $('profile-select').value;
-    updateVersionBadges();
-  });
 
   // Username — only valid MC characters
   $('username-input').addEventListener('input', () => {

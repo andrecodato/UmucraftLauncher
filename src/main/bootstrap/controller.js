@@ -15,9 +15,9 @@ const RuntimeInstaller = require('./installer');
  *   (any step)    -> failed
  */
 class BootstrapController {
-  constructor(baseDir) {
+  constructor(baseDir, logger) {
     this.baseDir = baseDir;
-    this.logger = new BootstrapLogger(baseDir);
+    this.logger = logger || new BootstrapLogger(baseDir);
     this.detector = new RuntimeDetector(this.logger, baseDir);
     this.installer = new RuntimeInstaller(this.logger, baseDir);
     this.state = 'idle';

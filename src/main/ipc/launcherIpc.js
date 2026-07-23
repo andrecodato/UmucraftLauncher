@@ -7,7 +7,7 @@ const { send, log } = require('../utils/ipcSender');
 const { fetchManifest } = require('../services/manifestService');
 const { syncMods } = require('../services/modSyncService');
 const { getRequiredJavaVersion, resolveJavaForLaunch, launchMinecraft } = require('../services/minecraftLauncher');
-const { installForge } = require('../services/forgeInstaller');
+const { ensureVersionJson, slugify } = require('../services/versionInstaller');
 const state = require('../state');
 
 function registerLauncherIpc() {
@@ -39,27 +39,37 @@ function registerLauncherIpc() {
   ipcMain.handle('sync-and-launch', async (_, { config, manifest }) => {
     try {
       const profileName = config.selectedProfile || CONFIG.DEFAULT_PROFILE;
-      const profileManifest = manifest.profiles?.[profileName] || manifest;
+      const profileManifest = manifest.profiles?.[profileName];
+      if (!profileManifest) {
+        throw new Error(`Perfil "${profileName}" não encontrado no manifesto.`);
+      }
 
       const mcVersion = profileManifest.minecraftVersion || LATEST_MC_VERSION;
-      const forgeVersion = profileManifest.forgeVersion || null;
-      const javaInfo = getRequiredJavaVersion(mcVersion);
+      const loader = profileManifest.loader || 'vanilla';
+      const javaInfo = getRequiredJavaVersion(mcVersion, profileManifest.javaMajor);
 
-      const minecraftDir = config.minecraftDir || BASE_DIR;
+      const gameRoot = config.minecraftDir || BASE_DIR;
+      const instanceDir = path.join(gameRoot, 'instances', slugify(profileName));
+      fs.mkdirSync(instanceDir, { recursive: true });
 
       send('status', `Verificando Java ${javaInfo.major}...`);
       send('phase', 'java');
       const javaPath = resolveJavaForLaunch(javaInfo.major);
 
-      if (forgeVersion) {
-        send('status', `Verificando Forge ${forgeVersion}...`);
-        send('phase', 'forge');
-        await installForge(javaPath, minecraftDir, mcVersion, forgeVersion);
-      }
+      send('status', loader !== 'vanilla' ? `Verificando ${loader}...` : 'Verificando Minecraft...');
+      send('phase', 'loader');
+      const versionId = await ensureVersionJson({
+        gameRoot,
+        mcVersion,
+        loader,
+        loaderVersion: profileManifest.loaderVersion,
+        versionJsonUrl: profileManifest.versionJsonUrl,
+        versionJsonMd5: profileManifest.versionJsonMd5,
+      });
 
       send('status', 'Sincronizando mods...');
       send('phase', 'mods');
-      const updatedCount = await syncMods(profileManifest, minecraftDir);
+      const updatedCount = await syncMods(profileManifest, instanceDir);
 
       if (updatedCount > 0) {
         log(`${updatedCount} mod(s) atualizado(s).`);
@@ -72,11 +82,12 @@ function registerLauncherIpc() {
 
       const pid = await launchMinecraft({
         javaPath,
-        minecraftDir,
+        gameRoot,
+        instanceDir,
         ram: config.ram || 4096,
         username: config.username || 'Player',
         mcVersion,
-        forgeVersion,
+        versionId,
       });
 
       send('launched', { pid });
