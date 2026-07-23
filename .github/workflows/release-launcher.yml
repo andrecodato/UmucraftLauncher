@@ -16,6 +16,8 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -35,6 +37,35 @@ jobs:
 
       - run: npm run build
 
+      # generate_release_notes do GitHub só lista PRs — como este repo mergeia
+      # localmente (git merge) e dá push direto em main sem abrir PR, ele não
+      # tem nada pra listar e a release fica só com o link de comparação, sem
+      # descrição nenhuma (confirmado na v1.0.1). Gera o changelog a partir
+      # dos commits de verdade (--no-merges, sem os "Bump version" também).
+      - name: Gera changelog a partir dos commits
+        id: changelog
+        shell: bash
+        run: |
+          PREV_TAG=$(git describe --tags --abbrev=0 "${{ github.ref_name }}^" 2>/dev/null || echo "")
+          if [ -z "$PREV_TAG" ]; then
+            RANGE="${{ github.ref_name }}"
+          else
+            RANGE="$PREV_TAG..${{ github.ref_name }}"
+          fi
+
+          LOG=$(git log --no-merges --pretty=format:"- %s" "$RANGE" | grep -v "^- Bump version" || true)
+          if [ -z "$LOG" ]; then
+            LOG="- Sem mudanças descritas nos commits deste range."
+          fi
+
+          {
+            echo "changelog<<CHANGELOG_EOF"
+            echo "$LOG"
+            echo "CHANGELOG_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "prev_tag=$PREV_TAG" >> "$GITHUB_OUTPUT"
+
       - name: Publica GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -42,7 +73,10 @@ jobs:
             dist/*.exe
             dist/*.exe.blockmap
             dist/latest.yml
-          generate_release_notes: true
+          body: |
+            ${{ steps.changelog.outputs.changelog }}
+
+            ${{ steps.changelog.outputs.prev_tag && format('**Full Changelog**: https://github.com/{0}/compare/{1}...{2}', github.repository, steps.changelog.outputs.prev_tag, github.ref_name) || '' }}
 
   build-linux:
     needs: build-windows
