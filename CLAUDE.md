@@ -74,3 +74,35 @@ git/GitHub Actions — é o `watcher.py` no Pi observando uma pasta de rede
   `os.chmod(tmp_path, 0o644)` antes do rename final. Já mordeu o
   `watcher.py` (mods.zip) e foi corrigido preventivamente no
   `pull-launcher-release.py` também.
+
+- **Assets de imagem brutos são pesados demais pra `src/assets/`.** Prints/
+  renders (ex: banner 4K de referência do modpack) chegam na casa de
+  10MB+ em PNG. Não commitar o arquivo bruto — ele infla o instalador
+  (`files: ["src/**/*"]` no `package.json` empacota tudo). Redimensione
+  pra resolução de exibição real (ex: 1920px de largura pra um hero de
+  fundo) e exporte em JPEG de qualidade ~80-85 antes de comitar; a
+  fonte bruta fica local e no `.gitignore`. Não há ImageMagick/ffmpeg
+  disponível por padrão neste ambiente Windows — `System.Drawing` via
+  PowerShell resolve sem instalar nada:
+  ```powershell
+  Add-Type -AssemblyName System.Drawing
+  $img = [System.Drawing.Image]::FromFile("$src")
+  $w = 1920; $h = [int]($img.Height * ($w / $img.Width))
+  $bmp = New-Object System.Drawing.Bitmap $w, $h
+  $g = [System.Drawing.Graphics]::FromImage($bmp)
+  $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+  $g.DrawImage($img, 0, 0, $w, $h)
+  $codec = [System.Drawing.Imaging.ImageCodecInfo]::GetImageEncoders() | Where-Object MimeType -eq "image/jpeg"
+  $p = New-Object System.Drawing.Imaging.EncoderParameters 1
+  $p.Param[0] = New-Object System.Drawing.Imaging.EncoderParameter ([System.Drawing.Imaging.Encoder]::Quality, [int64]82)
+  $bmp.Save("$dst", $codec, $p)
+  ```
+
+- **Testando mudanças de UI no Electron neste ambiente.** Sem Playwright
+  instalado e sem skill de `run` própria do projeto ainda. Pra
+  verificar visualmente: `Start-Process cmd.exe -ArgumentList "/c","npm run dev > log 2>&1"`,
+  achar o processo com `Get-Process | Where MainWindowTitle -ne ''`, e
+  capturar a janela com `GetWindowRect` + `Graphics.CopyFromScreen`
+  (Win32 via `Add-Type` no PowerShell). Funciona porque é um desktop
+  Windows real (não headless) — considere gerar uma skill de `run` com
+  `/run-skill-generator` se isso virar rotina.
