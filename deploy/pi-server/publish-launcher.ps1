@@ -20,7 +20,7 @@ try {
     if ($LASTEXITCODE -ne 0) { throw "npm run build falhou" }
 
     $version = (Get-Content package.json | ConvertFrom-Json).version
-    $exeName = "Umucraft Launcher Setup $version.exe"
+    $exeName = "UmuCraftLauncher-Setup-$version.exe"
     $exePath = "dist\$exeName"
 
     if (-not (Test-Path $exePath)) {
