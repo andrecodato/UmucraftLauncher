@@ -2,9 +2,10 @@
 """Umucraft Launcher - painel admin.
 
 Mostra o estado dos servicos (watcher, timer de release do launcher,
-nginx, samba, cloudflared), o manifest.json atual e o final do log do
-watcher, alem de um botao pra forcar o rebuild de um perfil na hora
-(sem precisar tocar num .jar so pra disparar o debounce).
+nginx, samba, cloudflared), o manifest.json atual (mods.zip e extras.zip
+de cada perfil) e o final do log do watcher, alem de um botao pra forcar
+o rebuild de um perfil na hora (sem precisar tocar num arquivo so pra
+disparar o debounce).
 
 So faz sentido atras do nginx com auth_basic — este processo escuta
 apenas em 127.0.0.1, nunca e exposto direto. Veja deploy/pi-server/README.md.
@@ -12,9 +13,11 @@ apenas em 127.0.0.1, nunca e exposto direto. Veja deploy/pi-server/README.md.
 import datetime
 import subprocess
 import sys
+import zipfile
 from pathlib import Path
 
 from flask import Flask, abort, jsonify, render_template_string
+from markupsafe import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import watcher  # reusa load_manifest/rebuild_profile do watcher.py
@@ -64,19 +67,89 @@ def human_time(ts):
     return datetime.datetime.fromtimestamp(ts).strftime("%d/%m %H:%M")
 
 
+def build_profile_tree(profile_name):
+    """Nested dict tree of what a player actually receives for this profile:
+    mods.zip's jars under a synthetic "mods/" root, merged with extras.zip's
+    real folder structure (config/, shaderpacks/, options.txt, ...) — i.e.
+    the union of both zips as they'll land in the instance dir. Leaf values
+    are byte sizes; dirs are nested dicts. zipfile only reads the central
+    directory here, not the compressed data, so this is cheap even for a
+    few hundred mods."""
+    tree = {}
+    profile_www = watcher.WWW_DIR / "profiles" / profile_name
+
+    mods_zip = profile_www / "mods.zip"
+    if mods_zip.exists():
+        mods_node = tree.setdefault("mods", {})
+        with zipfile.ZipFile(mods_zip) as zf:
+            for info in zf.infolist():
+                if info.is_dir():
+                    continue
+                mods_node[info.filename] = info.file_size
+
+    extras_zip = profile_www / "extras.zip"
+    if extras_zip.exists():
+        with zipfile.ZipFile(extras_zip) as zf:
+            for info in zf.infolist():
+                if info.is_dir():
+                    continue
+                parts = [p for p in info.filename.split("/") if p]
+                node = tree
+                for part in parts[:-1]:
+                    node = node.setdefault(part, {})
+                node[parts[-1]] = info.file_size
+
+    return tree
+
+
+def render_tree(node, depth=0):
+    """Nested dict -> <ul>/<details> HTML. Folders (dicts) get a native
+    <details> dropdown so they start collapsed at any depth except the
+    profile root, which the caller renders open; files are leaves with
+    their size. No JS needed — <details> is native collapse/expand."""
+    dirs = sorted(k for k, v in node.items() if isinstance(v, dict))
+    files = sorted(k for k, v in node.items() if not isinstance(v, dict))
+
+    parts = []
+    if dirs or files:
+        parts.append("<ul class='tree'>")
+        for d in dirs:
+            child_count = len(node[d])
+            parts.append(
+                f"<li><details><summary>📁 {escape(d)} "
+                f"<span class='fcount'>({child_count})</span></summary>"
+                f"{render_tree(node[d], depth + 1)}</details></li>"
+            )
+        for f in files:
+            size = node[f]
+            parts.append(
+                f"<li class='file'>📄 {escape(f)} "
+                f"<span class='fsize'>{human_size(size)}</span></li>"
+            )
+        parts.append("</ul>")
+    else:
+        parts.append("<div class='tree-empty'>(vazio)</div>")
+    return "".join(parts)
+
+
 def build_profile_rows(manifest):
     rows = []
     for name, prof in (manifest.get("profiles") or {}).items():
         mods_zip = watcher.WWW_DIR / "profiles" / name / "mods.zip"
-        exists = mods_zip.exists()
+        mods_exists = mods_zip.exists()
+        extras_zip = watcher.WWW_DIR / "profiles" / name / "extras.zip"
+        extras_exists = extras_zip.exists()
         rows.append({
             "name": name,
             "minecraftVersion": prof.get("minecraftVersion", "-"),
             "loader": prof.get("loader", "-"),
             "loaderVersion": prof.get("loaderVersion") or "-",
             "modsVersion": (prof.get("modsVersion") or "-")[:12],
-            "modsZipSize": human_size(mods_zip.stat().st_size) if exists else "-",
-            "modsZipMtime": human_time(mods_zip.stat().st_mtime) if exists else "-",
+            "modsZipSize": human_size(mods_zip.stat().st_size) if mods_exists else "-",
+            "modsZipMtime": human_time(mods_zip.stat().st_mtime) if mods_exists else "-",
+            "extrasZipSize": human_size(extras_zip.stat().st_size) if extras_exists else "-",
+            "extrasZipMtime": human_time(extras_zip.stat().st_mtime) if extras_exists else "-",
+            "treeHtml": render_tree(build_profile_tree(name)),
         })
     return rows
 
@@ -142,6 +215,20 @@ TEMPLATE = """
   button:hover { background: #6ef799; }
   button:disabled { background: var(--text-muted); cursor: not-allowed; }
   .rebuild-msg { font-size: 12px; margin-left: 8px; color: var(--accent); }
+
+  details.profile-tree { background: var(--bg-card); border: 1px solid var(--border);
+        border-radius: 8px; padding: 10px 14px; margin-bottom: 10px; }
+  details.profile-tree > summary { cursor: pointer; font-weight: 600; font-size: 13px; }
+  details.profile-tree > summary::marker { color: var(--accent); }
+  ul.tree { list-style: none; margin: 6px 0 0; padding-left: 18px; font-size: 12px;
+        font-family: Consolas, 'Courier New', monospace; }
+  ul.tree li { padding: 2px 0; }
+  ul.tree details { display: inline-block; width: 100%; }
+  ul.tree summary { cursor: pointer; }
+  ul.tree summary::marker { color: var(--text-dim); }
+  ul.tree .fcount, ul.tree .fsize { color: var(--text-dim); font-size: 11px; margin-left: 4px; }
+  ul.tree li.file { color: var(--text); }
+  .tree-empty { color: var(--text-muted); font-size: 12px; padding-left: 4px; }
 </style>
 </head>
 <body>
@@ -158,7 +245,7 @@ TEMPLATE = """
 
   <h2>Perfis</h2>
   <table>
-    <tr><th>Nome</th><th>MC</th><th>Loader</th><th>Mods v.</th><th>mods.zip</th><th>Atualizado</th><th></th></tr>
+    <tr><th>Nome</th><th>MC</th><th>Loader</th><th>Mods v.</th><th>mods.zip</th><th>Mods atualizado</th><th>extras.zip</th><th>Extras atualizado</th><th></th></tr>
     {% for p in profiles %}
     <tr>
       <td>{{ p.name }}</td>
@@ -167,6 +254,8 @@ TEMPLATE = """
       <td>{{ p.modsVersion }}</td>
       <td>{{ p.modsZipSize }}</td>
       <td>{{ p.modsZipMtime }}</td>
+      <td>{{ p.extrasZipSize }}</td>
+      <td>{{ p.extrasZipMtime }}</td>
       <td>
         <button onclick="rebuild('{{ p.name }}', this)">Forçar rebuild</button>
         <span class="rebuild-msg" id="msg-{{ p.name }}"></span>
@@ -174,9 +263,20 @@ TEMPLATE = """
     </tr>
     {% endfor %}
     {% if not profiles %}
-    <tr><td colspan="7">Nenhum perfil no manifest.json ainda.</td></tr>
+    <tr><td colspan="9">Nenhum perfil no manifest.json ainda.</td></tr>
     {% endif %}
   </table>
+
+  <h2>Árvore de arquivos (build atual)</h2>
+  {% for p in profiles %}
+  <details class="profile-tree">
+    <summary>{{ p.name }}</summary>
+    {{ p.treeHtml | safe }}
+  </details>
+  {% endfor %}
+  {% if not profiles %}
+  <div class="sub">Nenhum perfil publicado ainda.</div>
+  {% endif %}
 
   <h2>Log — umucraft-watcher</h2>
   <pre>{{ watcher_log }}</pre>

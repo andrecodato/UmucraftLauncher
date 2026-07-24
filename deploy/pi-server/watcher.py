@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """Umucraft Launcher - watcher de auto-update de mods.
 
-Observa staging/profiles/<Perfil>/mods/*.jar e staging/profiles/<Perfil>/instance.json.
-A cada mudanca (com debounce): gera mods.zip + MD5, e se houver um instance.json
+Observa staging/profiles/<Perfil>/ inteira. A cada mudanca (com debounce):
+gera mods.zip + MD5 a partir de mods/*.jar; se houver um instance.json
 (export do ATLauncher), importa dele a versao do Minecraft, o loader (Forge/NeoForge/
-Fabric/vanilla) e a versao do Java, publicando um version.json enxuto para o launcher
-baixar. So os campos relacionados a mods/versao/loader sao tocados no manifest.json;
-o resto (news, serverName, host, port, etc) fica intacto.
+Fabric/vanilla) e a versao do Java, publicando um version.json enxuto; e empacota
+qualquer outra coisa na pasta (config/, shaderpacks/, options.txt, etc) num
+extras.zip. So os campos relacionados a mods/versao/loader/extras sao tocados
+no manifest.json; o resto (news, serverName, host, port, etc) fica intacto.
 """
 import hashlib
 import json
@@ -18,6 +19,7 @@ import time
 import urllib.parse
 import zipfile
 from pathlib import Path
+from typing import Optional
 
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
@@ -35,6 +37,14 @@ ATLAUNCHER_VERSION_FIELDS = (
     "assetIndex", "assets", "downloads", "logging", "libraries",
     "mainClass", "arguments", "complianceLevel", "javaVersion",
 )
+
+# "extras" = tudo que o pack owner solta na pasta do perfil alem de mods/
+# (que ja tem seu proprio zip + lista) e instance.json (que e importado, nao
+# reenviado como esta): config/, shaderpacks/, resourcepacks/, options.txt,
+# servers.dat, etc. Sem lista fixa de nomes suportados — qualquer coisa nova
+# solta ali junto flui sozinha pro player no proximo sync.
+EXTRAS_EXCLUDE_TOP = {"mods", "instance.json", "saves", "logs", "crash-reports", "screenshots"}
+EXTRAS_EXCLUDE_NAMES = {".DS_Store", "Thumbs.db"}
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("umucraft-watcher")
@@ -64,6 +74,64 @@ def zip_profile_mods(mods_dir: Path, dest_zip: Path) -> str:
     os.chmod(tmp_path, 0o644)
     tmp_path.replace(dest_zip)
     return md5
+
+
+def zip_profile_extras(profile_dir: Path, dest_zip: Path) -> Optional[str]:
+    """Zips everything in the profile staging folder except mods/ (own zip +
+    list) and instance.json (imported, not shipped raw) — config/,
+    shaderpacks/, resourcepacks/, options.txt, servers.dat, whatever the pack
+    owner drops there. Returns None (and writes nothing) if there's nothing
+    to ship, so a profile with no extras doesn't get a stray empty zip."""
+    entries = []
+    for path in profile_dir.rglob("*"):
+        if path.is_dir():
+            continue
+        rel = path.relative_to(profile_dir)
+        if rel.parts[0] in EXTRAS_EXCLUDE_TOP:
+            continue
+        if path.name in EXTRAS_EXCLUDE_NAMES:
+            continue
+        entries.append((path, rel))
+
+    if not entries:
+        return None
+
+    dest_zip.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp_name = tempfile.mkstemp(suffix=".zip", dir=str(dest_zip.parent))
+    os.close(fd)
+    tmp_path = Path(tmp_name)
+    with zipfile.ZipFile(tmp_path, "w", zipfile.ZIP_DEFLATED) as zf:
+        for path, rel in sorted(entries, key=lambda e: e[1].as_posix()):
+            zf.write(path, arcname=str(rel))
+
+    hasher = hashlib.md5()
+    with open(tmp_path, "rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            hasher.update(chunk)
+    md5 = hasher.hexdigest()
+
+    # Same nginx-403-from-0600-tempfile gotcha as zip_profile_mods.
+    os.chmod(tmp_path, 0o644)
+    tmp_path.replace(dest_zip)
+    return md5
+
+
+def rebuild_extras_zip(profile_name: str, profile_dir: Path, profile: dict) -> bool:
+    dest_zip = WWW_DIR / "profiles" / profile_name / "extras.zip"
+    md5 = zip_profile_extras(profile_dir, dest_zip)
+    if md5 is None:
+        return False
+
+    if profile.get("extrasZipMd5") == md5:
+        log.info("[%s] extras identicos ao ultimo build (md5 %s), pulando", profile_name, md5)
+        return False
+
+    profile["extrasVersion"] = md5
+    profile["extrasZipMd5"] = md5
+    profile["extrasZipUrl"] = f"{PUBLIC_BASE_URL}/profiles/{urllib.parse.quote(profile_name)}/extras.zip"
+
+    log.info("[%s] extras (config/shaders/etc) atualizados -> versao %s", profile_name, md5)
+    return True
 
 
 def load_manifest() -> dict:
@@ -210,6 +278,9 @@ def rebuild_profile(profile_name: str) -> None:
     if instance_path.is_file():
         changed = import_atlauncher_instance(profile_name, instance_path, profile) or changed
 
+    if profile_dir.is_dir():
+        changed = rebuild_extras_zip(profile_name, profile_dir, profile) or changed
+
     if changed:
         save_manifest(manifest)
 
@@ -290,12 +361,13 @@ class ModsHandler(FileSystemEventHandler):
                 self.rebuilder.schedule(profile_name)
             return
 
-        if len(parts) >= 2 and parts[1] == "mods" and event.src_path.endswith(".jar"):
-            log.info("[%s] mudanca detectada: %s", profile_name, os.path.basename(event.src_path))
-            self.rebuilder.schedule(profile_name)
-        elif len(parts) == 2 and parts[1] == "instance.json":
-            log.info("[%s] mudanca detectada: instance.json", profile_name)
-            self.rebuilder.schedule(profile_name)
+        # Qualquer arquivo dentro da pasta do perfil agenda um rebuild — nao
+        # so mods/*.jar e instance.json. config/, shaderpacks/, options.txt
+        # etc tambem precisam disparar o zip de extras (rebuild_extras_zip),
+        # e cada helper de rebuild_profile ja checa md5 antes de reescrever
+        # entao um evento "de mais" aqui e barato (so relê e compara hash).
+        log.info("[%s] mudanca detectada: %s", profile_name, os.path.basename(event.src_path))
+        self.rebuilder.schedule(profile_name)
 
 
 def cleanup_orphaned_tmp_files() -> None:

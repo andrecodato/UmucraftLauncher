@@ -84,4 +84,59 @@ async function syncMods(manifest, profileDir) {
   return newFiles.length;
 }
 
-module.exports = { syncMods };
+/**
+ * Syncs config/shaderpacks/resourcepacks/options.txt/etc — whatever the
+ * server admin drops in the profile's staging folder alongside mods/ (see
+ * deploy/pi-server/watcher.py's rebuild_extras_zip). Unlike syncMods, this
+ * never clears profileDir first: it's an overlay extracted on top of an
+ * instance dir that also holds player-owned data (saves, logs) which must
+ * never be wiped by a sync.
+ */
+async function syncExtras(manifest, profileDir) {
+  const extrasVersion = manifest.extrasVersion;
+  const extrasZipUrl = manifest.extrasZipUrl;
+  const extrasZipMd5 = manifest.extrasZipMd5;
+
+  if (!extrasZipUrl) {
+    return 0;
+  }
+
+  const versionFile = path.join(profileDir, '.extras-version');
+  const localVersion = fs.existsSync(versionFile)
+    ? fs.readFileSync(versionFile, 'utf8').trim()
+    : null;
+
+  if (localVersion === extrasVersion) {
+    log(`Config/shaders/extras já estão na versão ${extrasVersion}, pulando download.`);
+    return 0;
+  }
+
+  log(`Atualizando config/shaders/extras: ${localVersion || 'nenhuma'} -> ${extrasVersion}`);
+  send('sync-progress', { current: 0, total: 1, filename: 'Baixando config/shaders...', percent: 0 });
+
+  const tmpDir = path.join(os.tmpdir(), 'umulauncher-extras');
+  fs.mkdirSync(tmpDir, { recursive: true });
+  const zipPath = path.join(tmpDir, 'extras.zip');
+
+  await downloadFile(extrasZipUrl, zipPath, 'Baixando config/shaders...');
+
+  if (extrasZipMd5) {
+    const hash = fileHash(zipPath);
+    if (hash !== extrasZipMd5) {
+      fs.unlinkSync(zipPath);
+      throw new Error(`MD5 inválido (extras): esperado ${extrasZipMd5}, obteve ${hash}`);
+    }
+  }
+
+  await extractZip(zipPath, { dir: profileDir });
+
+  fs.writeFileSync(versionFile, extrasVersion);
+  try { fs.unlinkSync(zipPath); } catch {}
+
+  log(`Config/shaders/extras atualizados para versão ${extrasVersion}.`);
+  send('sync-progress', { current: 1, total: 1, filename: 'Config/shaders atualizados!', percent: 100 });
+
+  return 1;
+}
+
+module.exports = { syncMods, syncExtras };
