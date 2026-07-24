@@ -77,7 +77,7 @@ class BootstrapController {
       this.logger.log('No compatible Java runtime found. Will download Adoptium JDK 21.');
 
       this.setState('downloading_runtime');
-      const installResult = await this.installer.install((pct, downloaded, total) => {
+      const installResult = await this.installer.install(21, (pct, downloaded, total) => {
         this.logger.progress({
           phase: 'downloading',
           percent: pct,

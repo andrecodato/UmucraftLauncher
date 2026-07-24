@@ -9,4 +9,5 @@ module.exports = {
   bootstrapWindow: null,
   bootstrapCtrl: null,
   resolvedJavaPath: null,
+  resolvedJavaVersion: null,
 };

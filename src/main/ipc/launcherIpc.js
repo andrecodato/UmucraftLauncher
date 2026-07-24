@@ -6,8 +6,8 @@ const { BASE_DIR, CONFIG, LATEST_MC_VERSION } = require('../utils/paths');
 const { send, log } = require('../utils/ipcSender');
 const { httpGetJson } = require('../utils/http');
 const { fetchManifest } = require('../services/manifestService');
-const { syncMods } = require('../services/modSyncService');
-const { getRequiredJavaVersion, resolveJavaForLaunch, launchMinecraft } = require('../services/minecraftLauncher');
+const { syncMods, syncExtras } = require('../services/modSyncService');
+const { getRequiredJavaVersion, launchMinecraft } = require('../services/minecraftLauncher');
 const { ensureVersionJson, slugify } = require('../services/versionInstaller');
 const state = require('../state');
 
@@ -68,9 +68,7 @@ function registerLauncherIpc() {
       const instanceDir = path.join(gameRoot, 'instances', slugify(profileName));
       fs.mkdirSync(instanceDir, { recursive: true });
 
-      send('status', `Verificando Java ${javaInfo.major}...`);
       send('phase', 'java');
-      const javaPath = resolveJavaForLaunch(javaInfo.major);
 
       send('status', loader !== 'vanilla' ? `Verificando ${loader}...` : 'Verificando Minecraft...');
       send('phase', 'loader');
@@ -93,17 +91,25 @@ function registerLauncherIpc() {
         log('Todos os mods estão atualizados!');
       }
 
+      send('status', 'Sincronizando config/shaders...');
+      const updatedExtras = await syncExtras(profileManifest, instanceDir);
+      if (updatedExtras > 0) {
+        log('Config/shaders/extras atualizados.');
+      }
+
       send('status', 'Iniciando Minecraft...');
       send('phase', 'launch');
 
       const pid = await launchMinecraft({
-        javaPath,
+        javaMajorHint: javaInfo.major,
         gameRoot,
         instanceDir,
         ram: config.ram || 4096,
         username: config.username || 'Player',
         mcVersion,
         versionId,
+        loader,
+        loaderVersion: profileManifest.loaderVersion,
       });
 
       send('launched', { pid });
