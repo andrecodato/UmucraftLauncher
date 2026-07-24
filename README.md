@@ -231,7 +231,10 @@ Esse script só cuida do zip de mods — `loader`/`loaderVersion`/`host`/`port` 
       "modsZipUrl": "https://www.dropbox.com/scl/fi/.../mods.zip?rlkey=...&dl=1",
       "modsZipMd5": "hash_md5_do_zip",
       "modsListUrl": "https://SUA_URL/profiles/Nome%20do%20Perfil/mods-list.json",
-      "modsListMd5": "hash_md5_da_lista"
+      "modsListMd5": "hash_md5_da_lista",
+      "extrasVersion": "1.0.0",
+      "extrasZipUrl": "https://SUA_URL/profiles/Nome%20do%20Perfil/extras.zip",
+      "extrasZipMd5": "hash_md5_do_extras_zip"
     }
   },
 
@@ -250,6 +253,7 @@ Esse script só cuida do zip de mods — `loader`/`loaderVersion`/`host`/`port` 
 - `loader`: `"vanilla"`, `"forge"`, `"neoforge"` ou `"fabric"`. Para vanilla, omita `loaderVersion`/`versionJsonUrl`/`versionJsonMd5`.
 - `loader`, `loaderVersion`, `javaMajor`, `versionJsonUrl`, `versionJsonMd5`, `modsListUrl` e `modsListMd5` são preenchidos automaticamente pelo watcher do Pi a partir de um `instance.json` do ATLauncher (veja `deploy/pi-server/README.md`) — só `host`/`port` são configurados à mão.
 - `modsListUrl` aponta pra um JSON com nome, versão, autor, ícone e descrição de cada mod (usado na aba Mods do launcher) — gerado a partir do `launcher.mods` do `instance.json`.
+- `extrasVersion`/`extrasZipUrl`/`extrasZipMd5`: config/shaderpacks/resourcepacks/options.txt/etc — qualquer coisa que o admin solte na pasta do perfil no Pi além de `mods/` e `instance.json`. Também preenchido sozinho pelo watcher (zip `extras.zip`); sincronizado como *overlay* (nunca apaga saves/logs do player, só sobrescreve o que veio no zip). Omitido se o perfil não tiver nenhum extra.
 - `host`/`port`: endereço do servidor Minecraft, mostrado no card do launcher com ping ao vivo.
 
 **Tags de notícia disponíveis:** `update`, `maintenance`, `event`, `info`
