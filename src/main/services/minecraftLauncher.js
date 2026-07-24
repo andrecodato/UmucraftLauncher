@@ -10,6 +10,8 @@ const { httpGetJson } = require('../utils/http');
 const { mapWithConcurrency } = require('../utils/concurrency');
 const state = require('../state');
 const RuntimeDetector = require('../bootstrap/detector');
+const RuntimeInstaller = require('../bootstrap/installer');
+const MojangJavaInstaller = require('../bootstrap/mojangJava');
 
 // Minecraft/Forge/NeoForge ship thousands of small library/asset files;
 // downloading them one at a time makes latency (not bandwidth) the
@@ -27,21 +29,76 @@ function getRequiredJavaVersion(minecraftVersion, javaMajorHint) {
   return { version: '17', major: 17 };
 }
 
-function resolveJavaForLaunch(majorVersion) {
-  if (state.resolvedJavaPath) {
+/**
+ * Resolves the Java executable for a specific profile — NOT just "whatever
+ * Java the bootstrap happened to find".
+ *
+ * The bootstrap step (controller.js) only guarantees *some* Java >= 17 so
+ * the app itself can start; it has no idea yet which modpack will be
+ * launched. Forge/NeoForge (and especially the Sinytra Connector Fabric
+ * compat layer) do low-level Java module-system patching that's fragile —
+ * not just across major versions, but across *distributions* of the same
+ * major. Confirmed in production against a real NeoForge 21.1.x + Connector
+ * modpack: it crashed with "NoSuchElementException: No value present" in
+ * ConnectorLoaderService.updateModuleReads under both system Java 25 AND a
+ * freshly-downloaded generic Adoptium Temurin 21 — but launched fine under
+ * ATLauncher, which (per its instance settings) uses "Java provided by
+ * Minecraft", i.e. Mojang's own redistributed JRE, not a generic vendor
+ * build. So the exact Mojang JRE is the primary path whenever the version
+ * JSON tells us which component it needs (javaVersion.component, e.g.
+ * "java-runtime-delta" — present on every real Mojang/ATLauncher version
+ * JSON); a plain major-version Adoptium install is only the fallback for
+ * versions that don't carry that field.
+ */
+async function resolveJavaForLaunch(javaVersionInfo, fallbackMajor) {
+  const logger = { log: (m) => log(m), error: (m) => log(`ERROR: ${m}`), state: () => {}, progress: () => {} };
+
+  if (javaVersionInfo?.component) {
+    const component = javaVersionInfo.component;
+    send('status', `Verificando Java (${component})...`);
+    const mojangJava = new MojangJavaInstaller(logger, BASE_DIR);
+    try {
+      return await mojangJava.ensure(component, (pct, completed, total) => {
+        send('download-progress', { label: `Java (${component})`, percent: pct, downloaded: completed, total });
+      });
+    } catch (err) {
+      log(`Falha ao obter o JRE oficial da Mojang (${component}): ${err.message}. Tentando fallback...`);
+    }
+  }
+
+  const majorVersion = javaVersionInfo?.majorVersion || fallbackMajor;
+
+  if (state.resolvedJavaPath && state.resolvedJavaVersion === majorVersion) {
     log(`Using bootstrap-resolved Java: ${state.resolvedJavaPath}`);
     return state.resolvedJavaPath;
   }
 
-  const logger = { log: (m) => log(m), error: (m) => log(`ERROR: ${m}`), state: () => {}, progress: () => {} };
   const detector = new RuntimeDetector(logger, BASE_DIR);
-  const result = detector.detect();
-  if (result) {
-    log(`Fallback detection found Java ${result.version} at ${result.path}`);
-    return result.path;
+
+  const bundled = detector.detectBundledMajor(majorVersion);
+  if (bundled) {
+    log(`Usando Java ${majorVersion} ja baixado: ${bundled.path}`);
+    return bundled.path;
   }
 
-  throw new Error(`Java >= ${majorVersion} nao encontrado. Reinicie o launcher para instalar.`);
+  if (state.resolvedJavaPath) {
+    log(`Java resolvido no boot e versao ${state.resolvedJavaVersion}, mas este perfil exige Java ${majorVersion}. Baixando a versao correta...`);
+  } else {
+    log(`Nenhum Java resolvido no boot. Baixando Java ${majorVersion}...`);
+  }
+
+  send('status', `Baixando Java ${majorVersion}...`);
+  const installer = new RuntimeInstaller(logger, BASE_DIR);
+  const installResult = await installer.install(majorVersion, (pct, downloaded, total) => {
+    send('download-progress', { label: `Java ${majorVersion}`, percent: pct, downloaded, total });
+  });
+
+  if (!installResult.valid) {
+    throw new Error(`Falha ao instalar Java ${majorVersion}.`);
+  }
+
+  log(`Java ${majorVersion} instalado: ${installResult.path}`);
+  return installResult.path;
 }
 
 /**
@@ -81,6 +138,7 @@ function loadVersionJson(versionsDir, versionId) {
         game: [...(parent.arguments?.game || []), ...(json.arguments?.game || [])],
       },
       assetIndex: json.assetIndex || parent.assetIndex,
+      javaVersion: json.javaVersion || parent.javaVersion,
       _parentId: json.inheritsFrom,
     };
   }
@@ -90,6 +148,7 @@ function loadVersionJson(versionsDir, versionId) {
     libraries: json.libraries || [],
     arguments: json.arguments || {},
     assetIndex: json.assetIndex,
+    javaVersion: json.javaVersion,
     _parentId: null,
   };
 }
@@ -307,7 +366,78 @@ function resolveArg(arg, vars) {
   return null;
 }
 
-async function launchMinecraft({ javaPath, gameRoot, instanceDir, ram, username, mcVersion, versionId }) {
+/**
+ * NeoForge doesn't ship a ready-to-use patched client jar — it has to be
+ * built locally by running the loader's own official installer, which
+ * downloads `neoforge-<version>-universal.jar` and applies a binary patch
+ * (via `net.neoforged.installertools:binarypatcher`, using NeoForm's mapping
+ * data) to the vanilla client jar, producing
+ * `libraries/net/neoforged/neoforge/<version>/neoforge-<version>-client.jar`.
+ * ATLauncher runs this exact step when a modpack instance is created; our
+ * launcher never did, so that jar — and the `neoforge-<version>-universal.jar`
+ * that carries the "neoforge" mod registration — never existed on disk.
+ * BootstrapLauncher discovers both automatically via `-DlibraryDirectory`
+ * once they're present (they don't need to be added to -cp/-p by hand); the
+ * game just can't find them if the installer never ran. Confirmed live: this
+ * is what was actually behind "Mod ID: 'minecraft'/'neoforge' ... Actual
+ * version: '[MISSING]'" — not the client-jar classpath/naming issue above,
+ * which was a real bug too but not sufficient on its own.
+ *
+ * Cached per loaderVersion by checking for the client jar's existence — the
+ * installer only needs to run once per version, shared across profiles
+ * (same as libraries/versions/assets).
+ *
+ * Only 'neoforge' is implemented — old-school Forge uses a different maven
+ * layout and version-string convention (mcVersion-loaderVersion combined)
+ * that hasn't been verified against a real installer run yet.
+ */
+async function ensureLoaderInstalled({ javaPath, gameRoot, loader, loaderVersion }) {
+  if (loader !== 'neoforge' || !loaderVersion) return;
+
+  const librariesDir = path.join(gameRoot, 'libraries');
+  const clientJarPath = path.join(
+    librariesDir, 'net', 'neoforged', 'neoforge', loaderVersion, `neoforge-${loaderVersion}-client.jar`
+  );
+  if (fs.existsSync(clientJarPath)) return;
+
+  log(`neoforge ${loaderVersion}: client jar patchado ausente. Rodando o instalador oficial (primeira vez, pode demorar)...`);
+  send('status', `Instalando NeoForge ${loaderVersion} (primeira vez, pode demorar)...`);
+
+  const installerUrl = `https://maven.neoforged.net/releases/net/neoforged/neoforge/${loaderVersion}/neoforge-${loaderVersion}-installer.jar`;
+  const installerCacheDir = path.join(gameRoot, 'cache', 'installers');
+  fs.mkdirSync(installerCacheDir, { recursive: true });
+  const installerPath = path.join(installerCacheDir, `neoforge-${loaderVersion}-installer.jar`);
+  if (!fs.existsSync(installerPath)) {
+    await downloadFile(installerUrl, installerPath, `Instalador NeoForge ${loaderVersion}`);
+  }
+
+  // The official installer refuses to run against a target dir with no
+  // launcher_profiles.json — it's checking for "a real Mojang-style launcher
+  // lives here", not actually reading anything from it. A stub satisfies it.
+  const profilesStub = path.join(gameRoot, 'launcher_profiles.json');
+  if (!fs.existsSync(profilesStub)) {
+    fs.writeFileSync(profilesStub, JSON.stringify({ profiles: {}, settings: {}, version: 3 }));
+  }
+
+  await new Promise((resolve, reject) => {
+    const child = spawn(javaPath, ['-jar', installerPath, '--install-client', gameRoot], { cwd: installerCacheDir });
+    let output = '';
+    child.stdout.on('data', (d) => { output += d.toString(); });
+    child.stderr.on('data', (d) => { output += d.toString(); });
+    child.on('error', reject);
+    child.on('close', (code) => {
+      if (code === 0 && fs.existsSync(clientJarPath)) {
+        resolve();
+      } else {
+        reject(new Error(`Instalador do NeoForge ${loaderVersion} falhou (codigo ${code}):\n${output.slice(-2000)}`));
+      }
+    });
+  });
+
+  log(`NeoForge ${loaderVersion} instalado.`);
+}
+
+async function launchMinecraft({ javaMajorHint, gameRoot, instanceDir, ram, username, mcVersion, versionId, loader, loaderVersion }) {
   const librariesDir = path.join(gameRoot, 'libraries');
   const versionsDir = path.join(gameRoot, 'versions');
   const assetsDir = path.join(gameRoot, 'assets');
@@ -317,6 +447,13 @@ async function launchMinecraft({ javaPath, gameRoot, instanceDir, ram, username,
 
   log(`Loading version JSON: ${versionId}`);
   const versionData = loadVersionJson(versionsDir, versionId);
+
+  // Resolved here (not earlier) because javaVersion.component only exists
+  // once the actual version JSON is loaded — see resolveJavaForLaunch's
+  // docstring for why the exact Mojang JRE matters, not just the major.
+  const javaPath = await resolveJavaForLaunch(versionData.javaVersion, javaMajorHint);
+
+  await ensureLoaderInstalled({ javaPath, gameRoot, loader, loaderVersion });
 
   const dedupedLibraries = dedupeLibraries(versionData.libraries);
   const removed = versionData.libraries.length - dedupedLibraries.length;
@@ -345,13 +482,30 @@ async function launchMinecraft({ javaPath, gameRoot, instanceDir, ram, username,
     }
   }
 
-  // Add main client jar only for vanilla launches.
-  // Forge's bootstraplauncher manages the client jar via the module system;
-  // adding it again causes duplicate module errors.
-  const isModular = versionData.mainClass === 'cpw.mods.bootstraplauncher.BootstrapLauncher';
-  if (!isModular) {
-    const mainJar = path.join(versionsDir, mcVersion, `${mcVersion}.jar`);
-    if (fs.existsSync(mainJar)) classpath.push(mainJar);
+  // The client jar goes on the classpath for EVERY launch, including
+  // BootstrapLauncher (NeoForge) ones — confirmed against ATLauncher's own
+  // working `-cp` (atlauncher-line.txt has client-1.21.1.jar right alongside
+  // every neoforge/modlauncher library). BootstrapLauncher avoids
+  // double-processing it as an automatic JPMS module via
+  // `-DignoreList=client-extra,client-<version>.jar` (from the version
+  // JSON's jvm args) — but that ignore-list only matches by exact filename.
+  // We store the vanilla download as `<mcVersion>.jar` (Mojang's own
+  // versions/<id>/<id>.jar convention, used elsewhere e.g. versionInstaller's
+  // isMinecraftInstalled), so putting THAT path on the classpath produces an
+  // automatic module named after "1.21.1.jar" — not in the ignore list, and
+  // not the "client" name FML's game-layer code actually looks for — so
+  // NeoForge still can't find Minecraft's own module and reports "Mod ID:
+  // 'minecraft' ... Actual version: '[MISSING]'" (cascading to 'neoforge'
+  // and everything that depends on either) even though the jar is right
+  // there. A same-content copy named client-<mcVersion>.jar, matching
+  // ATLauncher's own naming, is what actually needs to be on the classpath.
+  const mainJar = path.join(versionsDir, mcVersion, `${mcVersion}.jar`);
+  if (fs.existsSync(mainJar)) {
+    const clientAliasJar = path.join(versionsDir, mcVersion, `client-${mcVersion}.jar`);
+    if (!fs.existsSync(clientAliasJar) || fs.statSync(clientAliasJar).size !== fs.statSync(mainJar).size) {
+      fs.copyFileSync(mainJar, clientAliasJar);
+    }
+    classpath.push(clientAliasJar);
   }
 
   const sep = process.platform === 'win32' ? ';' : ':';
@@ -361,7 +515,13 @@ async function launchMinecraft({ javaPath, gameRoot, instanceDir, ram, username,
   // Variable substitutions for arguments
   const vars = {
     auth_player_name: username,
-    version_name: versionId,
+    // Must be the plain Minecraft version (matches ATLauncher's real
+    // `--version` and the actual client-<mcVersion>.jar filename on disk) —
+    // NOT our internal merged loader versionId, or `-DignoreList=client-extra,
+    // client-${version_name}.jar` (if templated that way in the version JSON)
+    // would reference a filename that doesn't exist and BootstrapLauncher
+    // would treat the real client jar as a duplicate module.
+    version_name: mcVersion,
     game_directory: instanceDir,
     assets_root: assetsDir,
     assets_index_name: versionData.assetIndex?.id || mcVersion,
@@ -415,6 +575,15 @@ async function launchMinecraft({ javaPath, gameRoot, instanceDir, ram, username,
   log(`Launching: ${javaPath} ${args.slice(0, 8).join(' ')}...`);
   log(`Main class: ${mainClass}`);
   log(`Classpath entries: ${classpath.length}`);
+
+  // TEMP DEBUG — full command dump for diffing against ATLauncher's actual
+  // launch command. Remove once the Connector crash is diagnosed.
+  try {
+    fs.writeFileSync(
+      path.join(require('os').tmpdir(), 'umucraft-full-launch-args.json'),
+      JSON.stringify({ javaPath, args }, null, 2)
+    );
+  } catch {}
 
   const child = spawn(javaPath, args, {
     cwd: instanceDir,

@@ -128,6 +128,29 @@ class RuntimeDetector {
   }
 
   /**
+   * Look for an already-installed bundled JDK matching an EXACT major
+   * version (java/jdk{major}/), regardless of what the generic bootstrap
+   * detection picked. Used to enforce per-profile Java requirements —
+   * "any Java >= 17" (detectBundled/detectSystem/detectCommonPaths) is fine
+   * for getting the app itself running, but Forge/NeoForge/Connector are
+   * sensitive to the exact major (see resolveJavaForLaunch in
+   * services/minecraftLauncher.js).
+   */
+  detectBundledMajor(majorVersion) {
+    const targetDir = path.join(this.javaDir, `jdk${majorVersion}`);
+    if (!fs.existsSync(targetDir)) return null;
+
+    const candidates = this.findJavaExecutables(targetDir);
+    for (const c of candidates) {
+      const r = this.validateExecutable(c);
+      if (r.valid && r.version === majorVersion) {
+        return { ...r, source: 'bundled' };
+      }
+    }
+    return null;
+  }
+
+  /**
    * Step 2: Check system Java/OpenJDK via PATH.
    */
   detectSystem() {
