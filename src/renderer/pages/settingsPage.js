@@ -2,6 +2,13 @@ import { $ } from '../helpers.js';
 import { appState } from '../store/state.js';
 import { collectConfig } from '../services/configService.js';
 
+const JAVA_SOURCE_LABELS = {
+  bundled: 'gerenciado pelo launcher',
+  installed: 'baixado automaticamente',
+  system: 'Java do sistema',
+  common: 'instalação detectada',
+};
+
 export function setupSettingsPage() {
   setupRamSlider();
 
@@ -20,6 +27,21 @@ export function setupSettingsPage() {
   $('open-launcher-dir-btn').addEventListener('click', () => {
     window.launcher.openFolder();
   });
+}
+
+/** Populates the "Java em uso" line and the app version, once sysInfo loads. */
+export function renderSysInfo() {
+  const { javaVersion, javaSource, appVersion } = appState.sysInfo || {};
+
+  const statusEl = $('java-current-status');
+  if (javaVersion) {
+    const sourceLabel = JAVA_SOURCE_LABELS[javaSource] || javaSource || '';
+    statusEl.innerHTML = `<span class="status-dot"></span>Usando Java ${javaVersion}${sourceLabel ? ` (${sourceLabel})` : ''}`;
+  } else {
+    statusEl.innerHTML = '<span class="status-dot"></span>Java ainda não detectado.';
+  }
+
+  $('app-version-hint').textContent = appVersion ? `UmuCraft Launcher — versão ${appVersion}` : 'UmuCraft Launcher';
 }
 
 function setupRamSlider() {

@@ -51,6 +51,10 @@ if [[ ! -f /etc/umucraft/watcher.env ]]; then
   echo ">> Criado /etc/umucraft/watcher.env - EDITE UMU_PUBLIC_BASE_URL antes de ir para producao."
 fi
 
+echo ">> Ajustando limites de inotify (evita overflow de fila em copias grandes via Samba)..."
+cp "$SCRIPT_DIR/sysctl-umucraft.conf" /etc/sysctl.d/99-umucraft-inotify.conf
+sysctl --system > /dev/null
+
 echo ">> Configurando nginx..."
 cp "$SCRIPT_DIR/nginx-umucraft.conf" /etc/nginx/sites-available/umucraft.conf
 ln -sf /etc/nginx/sites-available/umucraft.conf /etc/nginx/sites-enabled/umucraft.conf

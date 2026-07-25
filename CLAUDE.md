@@ -105,4 +105,39 @@ git/GitHub Actions — é o `watcher.py` no Pi observando uma pasta de rede
   capturar a janela com `GetWindowRect` + `Graphics.CopyFromScreen`
   (Win32 via `Add-Type` no PowerShell). Funciona porque é um desktop
   Windows real (não headless) — considere gerar uma skill de `run` com
-  `/run-skill-generator` se isso virar rotina.
+  `/run-skill-generator` se isso virar rotina. **Cuidado:** simular clique
+  (`SetCursorPos`+`mouse_event`) toma o controle do mouse físico de
+  verdade nessa máquina, não é um cursor virtual isolado — incomoda se o
+  usuário estiver usando o PC ao mesmo tempo. Avise antes de automatizar
+  cliques, ou prefira só ler logs/screenshot sem interagir.
+
+- **`extras.zip`/`mods.zip` cacheados no Cloudflare com conteúdo velho.**
+  O `nginx` não manda `Cache-Control`, então o Cloudflare aplica o cache
+  padrão dele por extensão de arquivo (`.zip` entra nessa lista) mesmo sem
+  header nenhum — por padrão ~4h (`max-age=14400`) na borda. Quando o
+  `watcher.py` republica um zip novo no mesmo path, quem cai numa borda
+  com cache quente ainda recebe os bytes velhos, com hash que não bate
+  mais com o `manifest.json` → "MD5 inválido" no launcher. Fix: as URLs
+  de `modsZipUrl`/`extrasZipUrl` levam `?v=<md5>` (query string entra na
+  cache key do CF), então cada versão nova vira uma URL nova — cache miss
+  garantido, sem depender de header nenhum. Se isso voltar a acontecer
+  pra um perfil específico que ainda está com a URL antiga em cache (ex:
+  o conteúdo não mudou desde que o fix foi deployado), forçar: tocar o
+  mtime de qualquer arquivo dentro da pasta desse perfil (fora de `mods/`)
+  já basta pra gerar um hash novo, já que o `zipfile` embute o mtime de
+  cada entrada nos bytes do zip.
+
+- **`watchdog`/inotify reemitindo "mudança" pra arquivo que não mudou.**
+  Uma cópia grande via Samba (300+ mods + shaderpacks/resourcepacks/config)
+  pode gerar mais eventos do que a fila do kernel aguenta
+  (`fs.inotify.max_queued_events`, padrão 16384) — o kernel derruba
+  eventos por overflow, e a lib `watchdog` reage refazendo uma varredura
+  completa da árvore e reemitindo evento sintético pra cada arquivo
+  existente, mesmo os que não mudaram. Sintoma: o log do watcher (visível
+  no `/admin/`) enche de "mudança detectada" pro pack inteiro, em rajadas
+  periódicas, mas o `mtime` real dos arquivos não mudou (confirmável com
+  `stat`). Não corrompe nada (o rebuild só publica se o md5 realmente
+  mudar), só desperdiça CPU/log. Fix: `deploy/pi-server/sysctl-umucraft.conf`
+  sobe `max_queued_events`/`max_user_watches` — aplicado via
+  `/etc/sysctl.d/99-umucraft-inotify.conf` (`install.sh` já faz isso em
+  instalação nova).
