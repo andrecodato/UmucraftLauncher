@@ -1,0 +1,32 @@
+/* ─── APP MODAL (RAM SETUP) ──────────────────────────────────────────────── */
+.app-modal-overlay {
+  position: fixed; inset: 0; z-index: 2000;
+  background: #000000aa;
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity 0.2s;
+}
+.app-modal-overlay.hidden { opacity: 0; pointer-events: none; }
+
+.app-modal-box {
+  width: 420px; max-width: calc(100vw - 48px);
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px;
+  display: flex; flex-direction: column; gap: 14px;
+  box-shadow: 0 12px 40px #00000066;
+}
+.app-modal-box h2 {
+  margin: 0; font-size: 16px; letter-spacing: 0.04em; color: var(--text);
+}
+.app-modal-sub {
+  margin: -6px 0 0; font-size: 12px; color: var(--text-dim); line-height: 1.5;
+}
+.app-modal-ram-display {
+  font-size: 22px; font-weight: 700; color: var(--accent); text-align: center;
+}
+.app-modal-warning {
+  display: none;
+  font-size: 12px; color: var(--warn); line-height: 1.5;
+  background: #e3b34122; border: 1px solid #e3b34155; border-radius: var(--radius);
+  padding: 10px 12px;
+}
+.app-modal-actions { display: flex; justify-content: flex-end; margin-top: 4px; }

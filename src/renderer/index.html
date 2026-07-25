@@ -20,6 +20,7 @@
   <link rel="stylesheet" href="styles/tips.css">
   <link rel="stylesheet" href="styles/discord.css">
   <link rel="stylesheet" href="styles/settings.css">
+  <link rel="stylesheet" href="styles/modal.css">
 </head>
 <body>
 
@@ -30,6 +31,21 @@
     <p class="loading-status" id="loading-status">Verificando Java...</p>
     <div class="loading-bar-wrap">
       <div class="loading-bar" id="loading-bar"></div>
+    </div>
+  </div>
+</div>
+
+<!-- RAM SETUP MODAL (first launch of a profile) -->
+<div class="app-modal-overlay hidden" id="ram-setup-modal" style="display:none;">
+  <div class="app-modal-box">
+    <h2>Configurar RAM</h2>
+    <p class="app-modal-sub">Primeira vez jogando este modpack — escolha quanta RAM o Minecraft pode usar. Da pra mudar depois em Configuracoes.</p>
+    <p class="hint">Sua RAM total: <strong id="ram-modal-total">?</strong> — recomendado entre 4 GB e 8 GB pra maioria dos modpacks.</p>
+    <div class="app-modal-ram-display" id="ram-modal-display">4096 MB</div>
+    <input type="range" id="ram-modal-slider" class="slider" min="1024" max="16384" step="512" value="4096">
+    <div class="app-modal-warning" id="ram-modal-warning"></div>
+    <div class="app-modal-actions">
+      <button class="btn-primary" id="ram-modal-confirm">Continuar</button>
     </div>
   </div>
 </div>
