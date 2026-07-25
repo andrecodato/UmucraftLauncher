@@ -52,7 +52,13 @@ function registerLauncherIpc() {
     }
   });
 
-  ipcMain.handle('sync-and-launch', async (_, { config, manifest }) => {
+  // Split from a single "sync-and-launch" call so the renderer can insert
+  // the first-launch RAM setup modal between "sync finished" and "java
+  // spawned" — sync-profile does everything up through mods/extras, hands
+  // back what launch-profile needs, and the renderer decides what RAM value
+  // to pass to launch-profile (either the saved config, or whatever the
+  // user just picked in the modal).
+  ipcMain.handle('sync-profile', async (_, { config, manifest }) => {
     try {
       const profileName = config.selectedProfile || CONFIG.DEFAULT_PROFILE;
       const profileManifest = manifest.profiles?.[profileName];
@@ -97,19 +103,39 @@ function registerLauncherIpc() {
         log('Config/shaders/extras atualizados.');
       }
 
-      send('status', 'Iniciando Minecraft...');
-      send('phase', 'launch');
-
-      const pid = await launchMinecraft({
-        javaMajorHint: javaInfo.major,
+      return {
+        ok: true,
+        profileName,
         gameRoot,
         instanceDir,
-        ram: config.ram || 4096,
-        username: config.username || 'Player',
         mcVersion,
         versionId,
         loader,
         loaderVersion: profileManifest.loaderVersion,
+        javaMajor: javaInfo.major,
+      };
+    } catch (err) {
+      log(`ERRO: ${err.message}`);
+      return { ok: false, error: err.message };
+    }
+  });
+
+  ipcMain.handle('launch-profile', async (_, opts) => {
+    const { gameRoot, instanceDir, mcVersion, versionId, loader, loaderVersion, javaMajor, ram, username } = opts;
+    try {
+      send('status', 'Iniciando Minecraft...');
+      send('phase', 'launch');
+
+      const pid = await launchMinecraft({
+        javaMajorHint: javaMajor,
+        gameRoot,
+        instanceDir,
+        ram: ram || 4096,
+        username: username || 'Player',
+        mcVersion,
+        versionId,
+        loader,
+        loaderVersion,
       });
 
       send('launched', { pid });

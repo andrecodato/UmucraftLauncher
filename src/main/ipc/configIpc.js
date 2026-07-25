@@ -16,6 +16,7 @@ function registerConfigIpc() {
       selectedProfile: CONFIG.DEFAULT_PROFILE,
       minecraftDir: BASE_DIR,
       profiles: [],
+      ramPromptedProfiles: [],
     };
   });
 
