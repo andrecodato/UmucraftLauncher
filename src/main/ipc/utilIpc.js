@@ -1,7 +1,10 @@
 'use strict';
-const { ipcMain, shell, dialog } = require('electron');
+const { ipcMain, shell, dialog, app } = require('electron');
 const os = require('os');
+const path = require('path');
+const fs = require('fs');
 const { BASE_DIR } = require('../utils/paths');
+const { slugify } = require('../services/versionInstaller');
 const state = require('../state');
 
 function registerUtilIpc() {
@@ -31,7 +34,17 @@ function registerUtilIpc() {
       platform: process.platform,
       totalRam,
       launcherDir: BASE_DIR,
+      appVersion: app.getVersion(),
+      javaVersion: state.resolvedJavaVersion,
+      javaSource: state.resolvedJavaSource,
     };
+  });
+
+  ipcMain.handle('open-profile-folder', (_, { profileName, gameRoot }) => {
+    const root = gameRoot || BASE_DIR;
+    const instanceDir = path.join(root, 'instances', slugify(profileName));
+    fs.mkdirSync(instanceDir, { recursive: true });
+    shell.openPath(instanceDir);
   });
 }
 

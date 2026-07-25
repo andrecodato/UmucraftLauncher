@@ -1,68 +1,92 @@
 import { $, escapeHtml, capitalize } from '../helpers.js';
 import { appState } from '../store/state.js';
 
+const modsListCache = {};
+
 export function setupModsPage() {
   $('mods-search').addEventListener('input', filterMods);
+  $('mods-back-btn').addEventListener('click', showPacksView);
 }
 
-export async function populateModsTab() {
+export function populateModsTab() {
   if (!appState.manifest) return;
-  const container = $('mods-container');
-  container.innerHTML = '';
+  showPacksView();
+  Object.keys(modsListCache).forEach(k => delete modsListCache[k]);
+
+  const grid = $('mods-packs-grid');
+  grid.innerHTML = '';
 
   const profileNames = appState.manifest.profiles ? Object.keys(appState.manifest.profiles) : [];
   if (profileNames.length === 0) {
-    container.innerHTML = '<div class="empty-state">Nenhum modpack configurado.</div>';
+    grid.innerHTML = '<div class="empty-state">Nenhum modpack configurado.</div>';
     return;
   }
 
-  profileNames.forEach(profileName => loadProfileMods(profileName, container));
+  profileNames.forEach(name => grid.appendChild(createPackCard(name, appState.manifest.profiles[name])));
 }
 
-async function loadProfileMods(profileName, container) {
-  const prof = appState.manifest.profiles[profileName];
+function createPackCard(name, prof) {
+  const card = document.createElement('div');
+  card.className = 'mods-pack-card';
 
-  const group = document.createElement('div');
-  group.className = 'modpack-group';
-
-  const loaderLabel = prof.loader && prof.loader !== 'vanilla' && prof.loaderVersion
-    ? ` · ${capitalize(prof.loader)} ${prof.loaderVersion}`
+  const loaderBadge = prof.loader && prof.loader !== 'vanilla' && prof.loaderVersion
+    ? `<span class="badge loader-${escapeHtml(prof.loader)}">${escapeHtml(capitalize(prof.loader))} ${escapeHtml(prof.loaderVersion)}</span>`
     : '';
 
-  const title = document.createElement('div');
-  title.className = 'modpack-group-title';
-  title.textContent = `${profileName} — MC ${prof.minecraftVersion || '?'}${loaderLabel}`;
-  group.appendChild(title);
+  card.innerHTML = `
+    <div class="mods-pack-name">${escapeHtml(name)}</div>
+    <div class="mods-pack-badges">
+      <span class="badge">MC ${escapeHtml(prof.minecraftVersion || '?')}</span>
+      ${loaderBadge}
+    </div>
+    <div class="mods-pack-count">${prof.modsZipUrl ? 'Ver mods' : 'Sem mods'}</div>
+  `;
 
-  const grid = document.createElement('div');
-  grid.className = 'mods-grid';
+  card.addEventListener('click', () => openPack(name, prof));
+  return card;
+}
+
+function showPacksView() {
+  $('mods-packs-view').style.display = '';
+  $('mods-detail-view').style.display = 'none';
+  $('mods-search').value = '';
+}
+
+async function openPack(name, prof) {
+  $('mods-packs-view').style.display = 'none';
+  $('mods-detail-view').style.display = '';
+  $('mods-detail-title').textContent = `Mods — ${name}`;
+
+  const grid = $('mods-detail-grid');
   grid.innerHTML = '<div class="empty-state">Carregando mods...</div>';
-  group.appendChild(grid);
-  container.appendChild(group);
 
   if (!prof.modsZipUrl) {
     grid.innerHTML = '<div class="empty-state">Este modpack ainda não tem mods.</div>';
     return;
   }
-
   if (!prof.modsListUrl) {
     grid.innerHTML = '<div class="empty-state">A lista detalhada de mods ainda não foi publicada para este modpack.</div>';
     return;
   }
 
-  const result = await window.launcher.fetchModsList(prof.modsListUrl, profileName);
+  if (modsListCache[name]) {
+    renderModsGrid(grid, modsListCache[name]);
+    return;
+  }
+
+  const result = await window.launcher.fetchModsList(prof.modsListUrl, name);
   if (!result.ok || !result.modsList || result.modsList.length === 0) {
     grid.innerHTML = '<div class="empty-state">Não foi possível carregar a lista de mods.</div>';
     return;
   }
 
-  const countEl = document.createElement('span');
-  countEl.className = 'modpack-group-count';
-  countEl.textContent = `${result.modsList.length} mods`;
-  title.appendChild(countEl);
+  modsListCache[name] = result.modsList;
+  renderModsGrid(grid, result.modsList);
+}
 
+function renderModsGrid(grid, modsList) {
   grid.innerHTML = '';
-  result.modsList.forEach(mod => grid.appendChild(createModCard(mod)));
+  modsList.forEach(mod => grid.appendChild(createModCard(mod)));
 }
 
 function createModCard(mod) {
@@ -90,14 +114,8 @@ function createModCard(mod) {
 
 function filterMods() {
   const query = $('mods-search').value.trim().toLowerCase();
-  document.querySelectorAll('.modpack-group').forEach(group => {
-    let visibleCount = 0;
-    group.querySelectorAll('.mod-card').forEach(card => {
-      const name = card.querySelector('.mod-name')?.textContent.toLowerCase() || '';
-      const match = !query || name.includes(query);
-      card.style.display = match ? '' : 'none';
-      if (match) visibleCount++;
-    });
-    group.style.display = visibleCount === 0 && query ? 'none' : '';
+  document.querySelectorAll('#mods-detail-grid .mod-card').forEach(card => {
+    const name = card.querySelector('.mod-name')?.textContent.toLowerCase() || '';
+    card.style.display = !query || name.includes(query) ? '' : 'none';
   });
 }

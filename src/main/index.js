@@ -46,6 +46,7 @@ async function runBootstrap() {
 
   state.resolvedJavaPath = result.javaPath;
   state.resolvedJavaVersion = result.javaVersion;
+  state.resolvedJavaSource = result.source;
 
   state.bootstrapCtrl.logger.state('preparing_profile');
   try {

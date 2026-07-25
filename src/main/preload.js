@@ -27,6 +27,7 @@ contextBridge.exposeInMainWorld('launcher', {
   openExternal: (url) => ipcRenderer.invoke('open-external', url),
   browseMinecraftDir: () => ipcRenderer.invoke('browse-minecraft-dir'),
   getSystemInfo: () => ipcRenderer.invoke('get-system-info'),
+  openProfileFolder: (profileName, gameRoot) => ipcRenderer.invoke('open-profile-folder', { profileName, gameRoot }),
 
   // Events from main process
   on: (event, cb) => {

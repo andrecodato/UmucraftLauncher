@@ -9,7 +9,7 @@ import { hideLoadingOverlay } from '../components/loadingOverlay.js';
 import { setupHomePage } from '../pages/homePage.js';
 import { setupModsPage } from '../pages/modsPage.js';
 import { setupDiscordPage } from '../pages/discordPage.js';
-import { setupSettingsPage } from '../pages/settingsPage.js';
+import { setupSettingsPage, renderSysInfo } from '../pages/settingsPage.js';
 import { populateTipsTab } from '../pages/tipsPage.js';
 
 async function init() {
@@ -27,6 +27,7 @@ async function init() {
   appState.config = await window.launcher.loadConfig();
 
   applyConfigToUI();
+  renderSysInfo();
 
   // Set RAM max
   const maxRam = Math.min(appState.sysInfo.totalRam, 32768);

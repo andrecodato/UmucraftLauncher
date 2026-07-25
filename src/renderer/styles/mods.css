@@ -1,24 +1,38 @@
 /* ─── MODS TAB ───────────────────────────────────────────────────────────── */
+#mods-packs-view, #mods-detail-view { height: 100%; }
 .mods-container-wrap {
   padding: 16px 24px;
   overflow-y: auto;
   height: 100%;
 }
-.modpack-group {
-  margin-bottom: 24px;
-}
-.modpack-group-title {
-  font-size: 14px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.08em; color: var(--accent); margin-bottom: 10px;
-  padding-bottom: 6px; border-bottom: 1px solid var(--border);
-}
 .mods-search {
   display: block; width: 100%; margin-bottom: 16px;
 }
-.modpack-group-count {
-  color: var(--text-muted); font-weight: 500; text-transform: none;
-  letter-spacing: normal; font-size: 12px; margin-left: 6px;
+
+/* Pack list view */
+.mods-packs-wrap {
+  padding: 16px 24px;
+  overflow-y: auto;
+  height: 100%;
 }
+.mods-packs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+.mods-pack-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px;
+  cursor: pointer; transition: border-color 0.15s, transform 0.15s;
+}
+.mods-pack-card:hover { border-color: var(--border-bright); transform: translateY(-1px); }
+.mods-pack-name { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.mods-pack-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.mods-pack-count { font-size: 12px; color: var(--text-muted); }
+
+/* Pack detail view */
+.tab-header-left { display: flex; align-items: center; gap: 14px; }
+.mods-back-btn { font-size: 12px; padding: 6px 12px; }
 .mods-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));

@@ -19,6 +19,9 @@ export function createProfileCard(name, prof, selected) {
       </div>
     </div>
     <div class="profile-card-right">
+      <button class="profile-card-folder-btn" data-action="open-folder" title="Abrir pasta da instância" aria-label="Abrir pasta da instância">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      </button>
       <span class="profile-card-ping">${prof.host ? 'Ping: ...' : ''}</span>
       <span class="profile-card-status offline" style="${prof.host ? '' : 'display:none'}">
         <span class="dot"></span>

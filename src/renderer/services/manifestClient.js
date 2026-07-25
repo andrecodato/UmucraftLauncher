@@ -54,6 +54,10 @@ export function renderProfileCards(m) {
     const prof = m.profiles[name];
     const card = createProfileCard(name, prof, name === appState.config.selectedProfile);
     card.addEventListener('click', () => selectProfile(name));
+    card.querySelector('.profile-card-folder-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      window.launcher.openProfileFolder(name, appState.config.minecraftDir);
+    });
     container.appendChild(card);
   });
 

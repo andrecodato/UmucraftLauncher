@@ -45,9 +45,11 @@ def service_status(name):
 
 
 def tail_journal(unit, n=40):
+    """Newest-first (`-r`) so the log console can show the latest entry at
+    the top without the caller needing to reverse anything."""
     try:
         out = subprocess.run(
-            ["journalctl", "-u", unit, "-n", str(n), "--no-pager", "-o", "short-iso"],
+            ["journalctl", "-u", unit, "-n", str(n), "--no-pager", "-o", "short-iso", "-r"],
             capture_output=True, text=True, timeout=5,
         )
         return out.stdout or "(sem entradas)"
@@ -166,6 +168,16 @@ def dashboard():
     return render_template_string(TEMPLATE, **context)
 
 
+@app.route("/logs/watcher")
+def logs_watcher():
+    return jsonify({"log": tail_journal("umucraft-watcher", 40)})
+
+
+@app.route("/logs/pull")
+def logs_pull():
+    return jsonify({"log": tail_journal("umucraft-launcher-pull", 15)})
+
+
 @app.route("/rebuild/<profile_name>", methods=["POST"])
 def rebuild(profile_name):
     manifest = watcher.load_manifest()
@@ -229,6 +241,21 @@ TEMPLATE = """
   ul.tree .fcount, ul.tree .fsize { color: var(--text-dim); font-size: 11px; margin-left: 4px; }
   ul.tree li.file { color: var(--text); }
   .tree-empty { color: var(--text-muted); font-size: 12px; padding-left: 4px; }
+
+  .live-dot {
+    display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--accent); margin-left: 6px; vertical-align: middle;
+    box-shadow: 0 0 6px var(--accent); animation: live-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes live-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+
+  .logs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .log-col h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em;
+        color: var(--text-dim); margin: 0 0 8px; }
+  .log-col pre { max-height: 420px; }
+  @media (max-width: 720px) {
+    .logs-grid { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
@@ -278,11 +305,17 @@ TEMPLATE = """
   <div class="sub">Nenhum perfil publicado ainda.</div>
   {% endif %}
 
-  <h2>Log — umucraft-watcher</h2>
-  <pre>{{ watcher_log }}</pre>
-
-  <h2>Log — umucraft-launcher-pull</h2>
-  <pre>{{ pull_log }}</pre>
+  <h2>Logs</h2>
+  <div class="logs-grid">
+    <div class="log-col">
+      <h3>umucraft-watcher <span class="live-dot" title="Atualiza sozinho a cada 4s"></span></h3>
+      <pre id="watcher-log">{{ watcher_log }}</pre>
+    </div>
+    <div class="log-col">
+      <h3>umucraft-launcher-pull <span class="live-dot" title="Atualiza sozinho a cada 4s"></span></h3>
+      <pre id="pull-log">{{ pull_log }}</pre>
+    </div>
+  </div>
 
 <script>
 async function rebuild(name, btn) {
@@ -300,6 +333,23 @@ async function rebuild(name, btn) {
     btn.disabled = false;
   }
 }
+
+// Log consoles poll on their own and re-render newest-first (server already
+// sorts each fetch that way via `journalctl -r`), so the latest line is
+// always the one in view — no scrolling needed to see what just happened.
+async function refreshLogs() {
+  try {
+    const [w, p] = await Promise.all([
+      fetch('logs/watcher').then(r => r.json()),
+      fetch('logs/pull').then(r => r.json()),
+    ]);
+    document.getElementById('watcher-log').textContent = w.log;
+    document.getElementById('pull-log').textContent = p.log;
+  } catch (e) {
+    // Transient network hiccup — next tick tries again, nothing to show the user.
+  }
+}
+setInterval(refreshLogs, 4000);
 </script>
 </body>
 </html>

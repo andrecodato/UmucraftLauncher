@@ -315,6 +315,7 @@ class DebouncedRebuilder:
         self.poll_interval = poll_interval
         self._last_event = {}
         self._first_event = {}
+        self._event_count = {}
         self._lock = threading.Lock()
         self._wake = threading.Event()
         self._thread = threading.Thread(target=self._loop, daemon=True)
@@ -325,6 +326,7 @@ class DebouncedRebuilder:
             now = time.monotonic()
             self._last_event[profile_name] = now
             self._first_event.setdefault(profile_name, now)
+            self._event_count[profile_name] = self._event_count.get(profile_name, 0) + 1
         self._wake.set()
 
     def _loop(self) -> None:
@@ -337,10 +339,17 @@ class DebouncedRebuilder:
                 for name, last in list(self._last_event.items()):
                     first = self._first_event[name]
                     if now - last >= self.delay or now - first >= self.max_delay:
-                        to_fire.append(name)
+                        count = self._event_count.pop(name, 0)
+                        to_fire.append((name, count))
                         self._last_event.pop(name, None)
                         self._first_event.pop(name, None)
-            for name in to_fire:
+            for name, count in to_fire:
+                # Um evento so aqui ja e o caso comum (1 arquivo solto na
+                # pasta); um numero bem maior costuma ser uma copia grande
+                # via Samba (ou o watchdog reemitindo tudo apos um overflow
+                # de fila do inotify) — o resumo evita logar 1 linha por
+                # arquivo em qualquer um dos dois casos.
+                log.info("[%s] %d evento(s) de mudanca detectados, reconstruindo...", name, count)
                 try:
                     rebuild_profile(name)
                 except Exception:
@@ -379,7 +388,9 @@ class ModsHandler(FileSystemEventHandler):
         # etc tambem precisam disparar o zip de extras (rebuild_extras_zip),
         # e cada helper de rebuild_profile ja checa md5 antes de reescrever
         # entao um evento "de mais" aqui e barato (so relê e compara hash).
-        log.info("[%s] mudanca detectada: %s", profile_name, os.path.basename(event.src_path))
+        # Log por evento aqui vira uma enxurrada de milhares de linhas numa
+        # copia grande via Samba (ou um overflow de fila do inotify fazendo
+        # o watchdog reemitir tudo) — o resumo agregado sai em _loop().
         self.rebuilder.schedule(profile_name)
 
 

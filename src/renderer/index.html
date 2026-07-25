@@ -151,14 +151,30 @@
 
   <!-- MODS TAB -->
   <div class="tab" id="tab-mods">
-    <div class="tab-header">
-      <h2>Mods</h2>
-      <button class="btn-secondary" id="refresh-manifest-btn">&#x21BA; Atualizar lista</button>
+    <!-- Pack list view -->
+    <div id="mods-packs-view">
+      <div class="tab-header">
+        <h2>Mods</h2>
+        <button class="btn-secondary" id="refresh-manifest-btn">&#x21BA; Atualizar lista</button>
+      </div>
+      <div class="mods-packs-wrap">
+        <div class="mods-packs-grid" id="mods-packs-grid">
+          <div class="empty-state">Clique em "Atualizar lista" para carregar os mods.</div>
+        </div>
+      </div>
     </div>
-    <div class="mods-container-wrap">
-      <input type="text" id="mods-search" class="input mods-search" placeholder="Buscar mod pelo nome...">
-      <div class="mods-container" id="mods-container">
-        <div class="empty-state">Clique em "Atualizar lista" para carregar os mods.</div>
+
+    <!-- Pack detail view (mods of the selected pack) -->
+    <div id="mods-detail-view" style="display:none;">
+      <div class="tab-header">
+        <div class="tab-header-left">
+          <button class="btn-secondary mods-back-btn" id="mods-back-btn">&#x2190; Voltar</button>
+          <h2 id="mods-detail-title">Mods</h2>
+        </div>
+      </div>
+      <div class="mods-container-wrap">
+        <input type="text" id="mods-search" class="input mods-search" placeholder="Buscar mod pelo nome...">
+        <div class="mods-grid" id="mods-detail-grid"></div>
       </div>
     </div>
   </div>
@@ -167,6 +183,7 @@
   <div class="tab" id="tab-news">
     <div class="tab-header">
       <h2>Noticias</h2>
+      <span class="badge news-tag-maintenance">Em construção</span>
     </div>
     <div class="news-container" id="news-container"></div>
   </div>
@@ -227,15 +244,15 @@
         <h3>Java</h3>
         <div class="form-group">
           <p class="hint">O launcher baixa e gerencia automaticamente o Java correto. Java minimo: 17.</p>
-          <div id="java-status-list"></div>
-          <button class="btn-secondary" id="open-launcher-dir-btn">Abrir pasta do launcher</button>
+          <p class="java-current" id="java-current-status"><span class="status-dot"></span>Detectando...</p>
         </div>
       </div>
 
       <div class="settings-section">
-        <h3>Conta</h3>
+        <h3>Sobre</h3>
         <div class="form-group">
-          <p class="hint">Escolha o nickname que quiser usar para jogar.</p>
+          <button class="btn-secondary" id="open-launcher-dir-btn">Abrir pasta do .UmuCraft</button>
+          <p class="hint" id="app-version-hint">UmuCraft Launcher</p>
         </div>
       </div>
 
