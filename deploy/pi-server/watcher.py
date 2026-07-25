@@ -128,7 +128,16 @@ def rebuild_extras_zip(profile_name: str, profile_dir: Path, profile: dict) -> b
 
     profile["extrasVersion"] = md5
     profile["extrasZipMd5"] = md5
-    profile["extrasZipUrl"] = f"{PUBLIC_BASE_URL}/profiles/{urllib.parse.quote(profile_name)}/extras.zip"
+    # ?v=<md5> cache-busts Cloudflare's edge cache: nginx sends no
+    # Cache-Control for static extensions like .zip, so CF's default
+    # per-extension caching serves whatever it last fetched for this exact
+    # URL — stale bytes for several hours after a rebuild, even though
+    # extras.zip on disk and manifest.json are already the new version.
+    # Query string is part of CF's cache key, so a new hash always means a
+    # fresh URL and a guaranteed cache miss against the old content.
+    profile["extrasZipUrl"] = (
+        f"{PUBLIC_BASE_URL}/profiles/{urllib.parse.quote(profile_name)}/extras.zip?v={md5}"
+    )
 
     log.info("[%s] extras (config/shaders/etc) atualizados -> versao %s", profile_name, md5)
     return True
@@ -164,7 +173,11 @@ def rebuild_mods_zip(profile_name: str, mods_dir: Path, profile: dict) -> bool:
 
     profile["modsVersion"] = md5
     profile["modsZipMd5"] = md5
-    profile["modsZipUrl"] = f"{PUBLIC_BASE_URL}/profiles/{urllib.parse.quote(profile_name)}/mods.zip"
+    # See the matching comment in rebuild_extras_zip: ?v=<md5> cache-busts
+    # Cloudflare's edge cache against the same URL serving stale bytes.
+    profile["modsZipUrl"] = (
+        f"{PUBLIC_BASE_URL}/profiles/{urllib.parse.quote(profile_name)}/mods.zip?v={md5}"
+    )
 
     log.info("[%s] mods atualizados -> versao %s (%d mods)", profile_name, md5, len(jars))
     return True
