@@ -60,9 +60,10 @@ def zip_profile_mods(mods_dir: Path, dest_zip: Path) -> str:
             zf.write(jar, arcname=jar.name)
 
     # read_bytes() would load the whole zip into memory at once — fine for a
-    # small pack, but a few hundred MB of mods.zip on a Pi with <1GB RAM
-    # trips the OOM killer (seen in production with a 300-mod/~650MB pack).
-    # Hash incrementally instead so peak memory stays at one chunk.
+    # small pack, but a few hundred MB of mods.zip on a host with ~2GB RAM
+    # (typical Proxmox LXC) trips the OOM killer (seen in production with a
+    # 300-mod/~650MB pack). Hash incrementally instead so peak memory stays
+    # at one chunk.
     hasher = hashlib.md5()
     with open(tmp_path, "rb") as f:
         for chunk in iter(lambda: f.read(1024 * 1024), b""):
