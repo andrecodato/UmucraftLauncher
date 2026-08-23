@@ -2,12 +2,18 @@
 """Umucraft Launcher - watcher de auto-update de mods.
 
 Observa staging/profiles/<Perfil>/ inteira. A cada mudanca (com debounce):
-gera mods.zip + MD5 a partir de mods/*.jar; se houver um instance.json
-(export do ATLauncher), importa dele a versao do Minecraft, o loader (Forge/NeoForge/
-Fabric/vanilla) e a versao do Java, publicando um version.json enxuto; e empacota
-qualquer outra coisa na pasta (config/, shaderpacks/, options.txt, etc) num
-extras.zip. So os campos relacionados a mods/versao/loader/extras sao tocados
-no manifest.json; o resto (news, serverName, host, port, etc) fica intacto.
+
+1. Se houver um *.zip na raiz do perfil (pratica rapida via Samba/VPN —
+   um arquivo so sobe bem mais rapido que milhares de .jar), extrai
+   mods/, instance.json e extras pra pasta do perfil; o zip fonte fica
+   la e e ignorado no extras.zip.
+2. Gera mods.zip + MD5 a partir de mods/*.jar.
+3. Se houver instance.json (export ATLauncher), importa MC/loader/Java e
+   publica version.json + mods-list.json.
+4. Empacota o resto (config/, shaderpacks/, options.txt, etc) em extras.zip.
+
+So os campos de mods/versao/loader/extras sao tocados no manifest.json;
+o resto (news, serverName, host, port, etc) fica intacto.
 """
 import hashlib
 import json
@@ -43,11 +49,146 @@ ATLAUNCHER_VERSION_FIELDS = (
 # reenviado como esta): config/, shaderpacks/, resourcepacks/, options.txt,
 # servers.dat, etc. Sem lista fixa de nomes suportados — qualquer coisa nova
 # solta ali junto flui sozinha pro player no proximo sync.
+# *.zip na raiz do perfil e o pack fonte (upload rapido) — nunca vai pro extras.
 EXTRAS_EXCLUDE_TOP = {"mods", "instance.json", "saves", "logs", "crash-reports", "screenshots"}
 EXTRAS_EXCLUDE_NAMES = {".DS_Store", "Thumbs.db"}
+PACK_ZIP_SKIP_TOP = {"saves", "logs", "crash-reports", "screenshots"}
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
-log = logging.getLogger("umucraft-watcher")
+def is_real_profile_name(name: str) -> bool:
+    """Ignora lixo do SMB/Windows (ex: .::TMPNAME:...) e arquivos ocultos."""
+    if not name or name.startswith("."):
+        return False
+    if "TMPNAME" in name or "::" in name:
+        return False
+    return True
+
+
+def find_pack_zip(profile_dir: Path) -> Optional[Path]:
+    """Maior *.zip na raiz do perfil (upload unico do pack). Ignora vazios."""
+    zips = [
+        p for p in profile_dir.glob("*.zip")
+        if p.is_file() and p.stat().st_size > 0
+    ]
+    if not zips:
+        return None
+    # Preferencia: nome tipico; senao o mais recente por mtime.
+    preferred = [p for p in zips if p.name.lower() in ("modpack.zip", "pack.zip", "instance.zip")]
+    pool = preferred or zips
+    return max(pool, key=lambda p: p.stat().st_mtime)
+
+
+def zip_upload_stable(path: Path, checks: int = 3, interval: float = 2.0) -> bool:
+    """True se o tamanho do arquivo nao mudou entre checks (upload Samba acabou)."""
+    try:
+        sizes = []
+        for i in range(checks):
+            sizes.append(path.stat().st_size)
+            if i + 1 < checks:
+                time.sleep(interval)
+        return len(set(sizes)) == 1 and sizes[0] > 0
+    except OSError:
+        return False
+
+
+def detect_zip_root_prefix(names: list[str]) -> str:
+    """Se o zip tem uma pasta wrapper unica (ATLauncher/export comum), devolve
+    'Pasta/' pra strip; senao string vazia (membros ja na raiz)."""
+    tops = set()
+    has_interesting_under = False
+    for raw in names:
+        name = raw.replace("\\", "/")
+        if not name or name.endswith("/"):
+            continue
+        parts = name.split("/")
+        if len(parts) == 1 and parts[0] == "instance.json":
+            return ""
+        if len(parts) == 2 and parts[0] == "mods":
+            return ""
+        if len(parts) >= 2 and parts[1] in ("mods", "instance.json", "config", "shaderpacks", "resourcepacks"):
+            has_interesting_under = True
+        tops.add(parts[0])
+    if len(tops) == 1 and has_interesting_under:
+        return next(iter(tops)) + "/"
+    return ""
+
+
+def unpack_pack_zip(profile_name: str, profile_dir: Path, rebuilder: Optional["DebouncedRebuilder"] = None) -> bool:
+    """Extrai o zip fonte do pack pra pasta do perfil. Retorna True se extraiu."""
+    pack_zip = find_pack_zip(profile_dir)
+    if pack_zip is None:
+        return False
+
+    if not zip_upload_stable(pack_zip):
+        log.info("[%s] %s ainda esta sendo escrito (tamanho mudando), reagendando",
+                 profile_name, pack_zip.name)
+        if rebuilder is not None:
+            rebuilder.schedule(profile_name)
+        return False
+
+    if not zipfile.is_zipfile(pack_zip):
+        log.warning("[%s] %s nao e um zip valido ainda (upload incompleto?), reagendando",
+                    profile_name, pack_zip.name)
+        if rebuilder is not None:
+            rebuilder.schedule(profile_name)
+        return False
+
+    marker = profile_dir / f".pack-zip-{pack_zip.name}.md5"
+    hasher = hashlib.md5()
+    with open(pack_zip, "rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            hasher.update(chunk)
+    pack_md5 = hasher.hexdigest()
+    if marker.is_file() and marker.read_text(encoding="utf-8").strip() == pack_md5:
+        log.info("[%s] pack zip %s ja extraido (md5 %s), pulando unpack", profile_name, pack_zip.name, pack_md5)
+        return False
+
+    log.info("[%s] extraindo pack zip %s (%.1f MB)...",
+             profile_name, pack_zip.name, pack_zip.stat().st_size / (1024 * 1024))
+
+    extracted = 0
+    try:
+        with zipfile.ZipFile(pack_zip, "r") as zf:
+            names = zf.namelist()
+            prefix = detect_zip_root_prefix(names)
+            for info in zf.infolist():
+                if info.is_dir():
+                    continue
+                raw = info.filename.replace("\\", "/")
+                if prefix and raw.startswith(prefix):
+                    rel = raw[len(prefix):]
+                else:
+                    rel = raw
+                if not rel or rel.endswith("/"):
+                    continue
+                parts = Path(rel).parts
+                if not parts:
+                    continue
+                if parts[0] in PACK_ZIP_SKIP_TOP:
+                    continue
+                if Path(rel).name in EXTRAS_EXCLUDE_NAMES:
+                    continue
+                # Nunca extrair o proprio zip nem paths absolutos/traversal
+                if ".." in parts or Path(rel).is_absolute():
+                    continue
+
+                dest = profile_dir / rel
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                with zf.open(info, "r") as src, open(dest, "wb") as out:
+                    while True:
+                        chunk = src.read(1024 * 1024)
+                        if not chunk:
+                            break
+                        out.write(chunk)
+                extracted += 1
+    except zipfile.BadZipFile:
+        log.warning("[%s] %s corrompido/incompleto, reagendando", profile_name, pack_zip.name)
+        if rebuilder is not None:
+            rebuilder.schedule(profile_name)
+        return False
+
+    marker.write_text(pack_md5 + "\n", encoding="utf-8")
+    log.info("[%s] pack zip extraido: %d arquivo(s) -> %s", profile_name, extracted, profile_dir)
+    return extracted > 0
 
 
 def zip_profile_mods(mods_dir: Path, dest_zip: Path) -> str:
@@ -91,6 +232,11 @@ def zip_profile_extras(profile_dir: Path, dest_zip: Path) -> Optional[str]:
         if rel.parts[0] in EXTRAS_EXCLUDE_TOP:
             continue
         if path.name in EXTRAS_EXCLUDE_NAMES:
+            continue
+        # Pack fonte (upload unico) e marcadores internos — nao vao pro player.
+        if len(rel.parts) == 1 and path.suffix.lower() == ".zip":
+            continue
+        if len(rel.parts) == 1 and path.name.startswith(".pack-zip-"):
             continue
         entries.append((path, rel))
 
@@ -277,8 +423,14 @@ def import_atlauncher_instance(profile_name: str, instance_path: Path, profile: 
     return True
 
 
-def rebuild_profile(profile_name: str) -> None:
+def rebuild_profile(profile_name: str, rebuilder: Optional["DebouncedRebuilder"] = None) -> None:
     profile_dir = STAGING_DIR / profile_name
+    if not profile_dir.is_dir():
+        return
+
+    # Upload rapido: zip unico na raiz -> extrai mods/instance/extras pra pasta.
+    unpack_pack_zip(profile_name, profile_dir, rebuilder=rebuilder)
+
     manifest = load_manifest()
     profiles = manifest.setdefault("profiles", {})
     profile = profiles.setdefault(profile_name, {})
@@ -292,8 +444,7 @@ def rebuild_profile(profile_name: str) -> None:
     if instance_path.is_file():
         changed = import_atlauncher_instance(profile_name, instance_path, profile) or changed
 
-    if profile_dir.is_dir():
-        changed = rebuild_extras_zip(profile_name, profile_dir, profile) or changed
+    changed = rebuild_extras_zip(profile_name, profile_dir, profile) or changed
 
     if changed:
         save_manifest(manifest)
@@ -352,7 +503,7 @@ class DebouncedRebuilder:
                 # arquivo em qualquer um dos dois casos.
                 log.info("[%s] %d evento(s) de mudanca detectados, reconstruindo...", name, count)
                 try:
-                    rebuild_profile(name)
+                    rebuild_profile(name, rebuilder=self)
                 except Exception:
                     log.exception("[%s] falha ao reconstruir", name)
 
@@ -371,6 +522,8 @@ class ModsHandler(FileSystemEventHandler):
         if not parts:
             return
         profile_name = parts[0]
+        if not is_real_profile_name(profile_name):
+            return
 
         if event.is_directory:
             # Novo perfil (ou a pasta mods/ dele) apareceu. Agenda um build
@@ -428,7 +581,7 @@ def main():
 
     # Builda uma vez no start, cobre o caso de mods/instance.json ja estarem la antes do servico subir
     for entry in STAGING_DIR.iterdir():
-        if entry.is_dir():
+        if entry.is_dir() and is_real_profile_name(entry.name):
             rebuilder.schedule(entry.name)
 
     try:

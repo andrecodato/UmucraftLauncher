@@ -108,13 +108,26 @@ MANIFEST_URL: 'https://umucraft-updates.codato.dev/manifest.json',
 
 ## Uso do dia a dia
 
-- **Atualizar mods:** `\\192.168.201.26\modpacks\<Perfil>\mods\` — espere ~20s.
-- **Extras (config/shaderpacks/resourcepacks/options.txt):** solte irmão de `mods\` no mesmo perfil; vira `extras.zip` (overlay no player, sem apagar saves). Não solte `saves\`.
-- **Loader/versão MC:** substitua `instance.json` do ATLauncher na pasta do perfil.
-- **Servidor novo:** pasta nova em `modpacks\<Nome>\` + `host`/`port` à mão no `manifest.json`.
+**Pratica recomendada (rapida via VPN):** compacte o pack inteiro num `.zip` e
+solte **um arquivo so** na raiz do perfil:
+
+```
+\\192.168.201.26\modpacks\<Perfil>\modpack.zip
+```
+
+O watcher espera o upload estabilizar, extrai `mods/`, `instance.json`,
+`config/`, etc. (respeita pasta wrapper do ATLauncher), importa o loader e
+publica `mods.zip`/`extras.zip`. O `.zip` fonte fica na pasta e **nao** vai
+pro player. Nomes preferidos: `modpack.zip`, `pack.zip`, `instance.zip`
+(qualquer `*.zip` na raiz tambem serve).
+
+- **Atualizar mods (legado, pasta a pasta):** `...\modpacks\<Perfil>\mods\` — mais lento na VPN.
+- **Extras soltos:** irmao de `mods\` no perfil; ou dentro do mesmo zip do pack.
+- **Loader/versao MC:** `instance.json` no zip ou solto na pasta do perfil.
+- **Servidor novo:** pasta nova em `modpacks\<Nome>\` + zip (ou pastas) + `host`/`port` no `manifest.json`.
 - **Mapas:** `\\192.168.201.26\umucraft-public\maps\`
-- **Notícias:** edite `umucraft-public\manifest.json` (watcher só mexe em campos de mods/loader/extras).
-- **Release do launcher:** bump `version` + tag `vX.Y.Z` → Actions builda → timer `umucraft-launcher-pull` publica em `www/launcher/`. Fallback imediato: `npm run publish-launcher`.
+- **Noticias:** edite `umucraft-public\manifest.json` (watcher so mexe em mods/loader/extras).
+- **Release do launcher:** bump `version` + tag `vX.Y.Z` → Actions → timer `umucraft-launcher-pull`. Fallback: `npm run publish-launcher`.
 
 ## Logs / troubleshooting
 
