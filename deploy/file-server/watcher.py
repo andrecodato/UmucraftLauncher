@@ -136,18 +136,16 @@ def unpack_pack_zip(profile_name: str, profile_dir: Path, rebuilder: Optional["D
             rebuilder.schedule(profile_name)
         return False
 
-    marker = profile_dir / f".pack-zip-{pack_zip.name}.md5"
-    hasher = hashlib.md5()
-    with open(pack_zip, "rb") as f:
-        for chunk in iter(lambda: f.read(1024 * 1024), b""):
-            hasher.update(chunk)
-    pack_md5 = hasher.hexdigest()
-    if marker.is_file() and marker.read_text(encoding="utf-8").strip() == pack_md5:
-        log.info("[%s] pack zip %s ja extraido (md5 %s), pulando unpack", profile_name, pack_zip.name, pack_md5)
+    marker = profile_dir / f".pack-zip-{pack_zip.name}.stamp"
+    st = pack_zip.stat()
+    stamp = f"{st.st_size}:{int(st.st_mtime_ns)}\n"
+    if marker.is_file() and marker.read_text(encoding="utf-8") == stamp:
+        log.info("[%s] pack zip %s ja extraido (size/mtime iguais), pulando unpack",
+                 profile_name, pack_zip.name)
         return False
 
     log.info("[%s] extraindo pack zip %s (%.1f MB)...",
-             profile_name, pack_zip.name, pack_zip.stat().st_size / (1024 * 1024))
+             profile_name, pack_zip.name, st.st_size / (1024 * 1024))
 
     extracted = 0
     try:
@@ -192,7 +190,7 @@ def unpack_pack_zip(profile_name: str, profile_dir: Path, rebuilder: Optional["D
             rebuilder.schedule(profile_name)
         return False
 
-    marker.write_text(pack_md5 + "\n", encoding="utf-8")
+    marker.write_text(stamp, encoding="utf-8")
     log.info("[%s] pack zip extraido: %d arquivo(s) -> %s", profile_name, extracted, profile_dir)
     return extracted > 0
 
