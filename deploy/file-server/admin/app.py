@@ -8,7 +8,7 @@ o rebuild de um perfil na hora (sem precisar tocar num arquivo so pra
 disparar o debounce).
 
 So faz sentido atras do nginx com auth_basic — este processo escuta
-apenas em 127.0.0.1, nunca e exposto direto. Veja deploy/pi-server/README.md.
+apenas em 127.0.0.1, nunca e exposto direto. Veja deploy/file-server/README.md.
 """
 import datetime
 import subprocess

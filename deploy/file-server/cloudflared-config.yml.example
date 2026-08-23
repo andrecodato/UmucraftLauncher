@@ -1,0 +1,15 @@
+# Copie para /etc/cloudflared/config.yml depois de:
+#   cloudflared tunnel login
+#   cloudflared tunnel create umucraft-updates
+#   cloudflared tunnel route dns umucraft-updates umucraft-updates.codato.dev
+#
+# O create imprime o TUNNEL_ID e grava credentials em ~/.cloudflared/<TUNNEL_ID>.json
+# (copie o .json + cert.pem para /etc/cloudflared/ antes do service install).
+
+tunnel: umucraft-updates
+credentials-file: /etc/cloudflared/TUNNEL_ID.json
+
+ingress:
+  - hostname: umucraft-updates.codato.dev
+    service: http://localhost:80
+  - service: http_status:404

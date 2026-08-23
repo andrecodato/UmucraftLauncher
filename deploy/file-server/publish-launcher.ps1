@@ -1,13 +1,14 @@
 #!/usr/bin/env pwsh
-# Builda o launcher Windows e publica no feed de auto-update do Pi.
-# Uso: npm run publish-launcher   (ou direto: pwsh deploy/pi-server/publish-launcher.ps1)
+# Builda o launcher Windows e publica no feed de auto-update do file-server.
+# Uso: npm run publish-launcher   (ou direto: pwsh deploy/file-server/publish-launcher.ps1)
 #
 # Antes de rodar: bump a versao em package.json ("version"). Sem isso o
 # electron-updater nao vai enxergar essa build como mais nova.
 
 param(
-    [string]$PiHost = "andrecodato@microlab",
-    [string]$RemoteDir = "/srv/umucraft/www/launcher"
+    [string]$RemoteHost = "root@192.168.201.26",
+    [string]$RemoteDir = "/srv/umucraft/www/launcher",
+    [string]$RemoteOwner = "andrecodato"
 )
 
 $ErrorActionPreference = "Stop"
@@ -27,13 +28,13 @@ try {
         throw "Nao encontrei $exePath -- confira se o build gerou essa versao."
     }
 
-    Write-Host ">> Publicando versao $version para ${PiHost}:$RemoteDir ..." -ForegroundColor Cyan
-    scp "dist\$exeName" "dist\$exeName.blockmap" "dist\latest.yml" "${PiHost}:~/pi-server/"
+    Write-Host ">> Publicando versao $version para ${RemoteHost}:$RemoteDir ..." -ForegroundColor Cyan
+    scp "dist\$exeName" "dist\$exeName.blockmap" "dist\latest.yml" "${RemoteHost}:/tmp/"
     if ($LASTEXITCODE -ne 0) { throw "scp falhou" }
 
-    # sudo vai pedir senha interativa aqui, normal.
-    ssh $PiHost "sudo mv ~/pi-server/'$exeName' ~/pi-server/'$exeName.blockmap' ~/pi-server/latest.yml '$RemoteDir/' && sudo chown -R andrecodato:andrecodato '$RemoteDir' && ls -la '$RemoteDir'"
-    if ($LASTEXITCODE -ne 0) { throw "publicacao no Pi falhou" }
+    # sudo pode pedir senha interativa se o remote nao for root.
+    ssh $RemoteHost "mv /tmp/'$exeName' /tmp/'$exeName.blockmap' /tmp/latest.yml '$RemoteDir/' && chown -R ${RemoteOwner}:${RemoteOwner} '$RemoteDir' && ls -la '$RemoteDir'"
+    if ($LASTEXITCODE -ne 0) { throw "publicacao no file-server falhou" }
 
     Write-Host ">> Publicado! https://umucraft-updates.codato.dev/launcher/latest.yml" -ForegroundColor Green
     Write-Host ">> Players com o launcher aberto recebem a atualizacao no proximo restart." -ForegroundColor Green

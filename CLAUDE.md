@@ -2,8 +2,8 @@
 
 Guia rápido pra trabalhar neste repo. Visão geral do projeto, estrutura de
 pastas e `manifest.json` já estão documentados em `README.md` — não repetir
-aqui. Detalhes de infra do servidor (Pi, Samba, nginx, Cloudflare Tunnel)
-ficam em `deploy/pi-server/README.md`.
+aqui. Detalhes de infra do servidor (Samba, nginx, Cloudflare Tunnel)
+ficam em `deploy/file-server/README.md`.
 
 ## Comandos
 
@@ -13,7 +13,7 @@ npm start                # electron .
 npm run build             # instalador Windows (dist/)
 npm run build:linux       # AppImage
 npm run build:mac         # dmg
-npm run publish-launcher  # build + publica no Pi na hora (fallback manual, veja abaixo)
+npm run publish-launcher  # build + publica no file-server na hora (fallback manual, veja abaixo)
 ```
 
 Não há suíte de testes automatizada neste projeto ainda.
@@ -37,8 +37,8 @@ recusa o build se a tag não bater exatamente com esse valor.
 
 ## Releases do launcher (automatizado)
 
-Não usa GitHub raw nem Dropbox pro `.exe` — é self-hosted no Pi, publicado
-via git:
+Não usa GitHub raw nem Dropbox pro `.exe` — é self-hosted no file-server
+(Proxmox LXC), publicado via git:
 
 1. Bump `version` em `package.json`, commit em `main` (via PR ou direto)
 2. `git tag vX.Y.Z && git push origin vX.Y.Z` — a tag precisa bater com o
@@ -48,11 +48,11 @@ via git:
    (`generate_release_notes: true` — o changelog da release é gerado
    sozinho a partir dos PRs/commits desde a tag anterior, por isso títulos
    de PR descritivos importam)
-4. O Pi (`deploy/pi-server/pull-launcher-release.py`, timer systemd
-   `umucraft-launcher-pull` a cada 5 min) detecta a release nova via API
-   pública do GitHub e publica em `www/launcher/` sozinho — sem SSH, sem
-   porta aberta, mesma postura "só conexão de saída" do resto do setup
-   (Cloudflare Tunnel)
+4. O file-server (`deploy/file-server/pull-launcher-release.py`, timer
+   systemd `umucraft-launcher-pull` a cada 5 min) detecta a release nova
+   via API pública do GitHub e publica em `www/launcher/` sozinho — sem
+   SSH, sem porta aberta, mesma postura "só conexão de saída" do resto do
+   setup (Cloudflare Tunnel)
 5. Players que já têm o launcher aberto recebem o update sozinhos no
    próximo restart (`electron-updater`, checagem no boot antes do Java)
 
@@ -61,8 +61,8 @@ local e sobe via SSH na hora, pulando a fila do Actions/timer. Útil pra
 hotfix urgente.
 
 Mods (`mods.zip`) seguem um fluxo totalmente separado e **não** passam por
-git/GitHub Actions — é o `watcher.py` no Pi observando uma pasta de rede
-(Samba), veja `deploy/pi-server/README.md`.
+git/GitHub Actions — é o `watcher.py` no file-server observando uma pasta
+de rede (Samba), veja `deploy/file-server/README.md`.
 
 ## Gotchas de infra já mordidos
 
@@ -137,7 +137,7 @@ git/GitHub Actions — é o `watcher.py` no Pi observando uma pasta de rede
   no `/admin/`) enche de "mudança detectada" pro pack inteiro, em rajadas
   periódicas, mas o `mtime` real dos arquivos não mudou (confirmável com
   `stat`). Não corrompe nada (o rebuild só publica se o md5 realmente
-  mudar), só desperdiça CPU/log. Fix: `deploy/pi-server/sysctl-umucraft.conf`
+  mudar), só desperdiça CPU/log. Fix: `deploy/file-server/sysctl-umucraft.conf`
   sobe `max_queued_events`/`max_user_watches` — aplicado via
   `/etc/sysctl.d/99-umucraft-inotify.conf` (`install.sh` já faz isso em
   instalação nova).

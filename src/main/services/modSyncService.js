@@ -116,7 +116,7 @@ async function syncMods(manifest, profileDir) {
 /**
  * Syncs config/shaderpacks/resourcepacks/options.txt/etc — whatever the
  * server admin drops in the profile's staging folder alongside mods/ (see
- * deploy/pi-server/watcher.py's rebuild_extras_zip). Unlike syncMods, this
+ * deploy/file-server/watcher.py's rebuild_extras_zip). Unlike syncMods, this
  * never clears profileDir itself: it's an overlay applied on top of an
  * instance dir that also holds player-owned data (saves, logs) which must
  * never be wiped by a sync.

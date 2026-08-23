@@ -1,8 +1,9 @@
 name: Release launcher
 
-# Dispara ao dar push numa tag "vX.Y.Z". O Pi (deploy/pi-server/pull-launcher-release.py)
-# fica de olho na release mais recente deste repo e publica sozinho em
-# umucraft-updates.codato.dev/launcher/ — nao ha deploy nenhum aqui, so build + release.
+# Dispara ao dar push numa tag "vX.Y.Z". O file-server
+# (deploy/file-server/pull-launcher-release.py) fica de olho na release mais
+# recente deste repo e publica sozinho em umucraft-updates.codato.dev/launcher/
+# — nao ha deploy nenhum aqui, so build + release.
 on:
   push:
     tags:

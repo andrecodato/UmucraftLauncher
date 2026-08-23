@@ -168,7 +168,7 @@ const CONFIG = {
 ```
 
 **Opções de hospedagem:**
-- **Raspberry Pi self-hosted (recomendado):** veja `deploy/pi-server/README.md` — Samba + watcher automático + Cloudflare Tunnel. Depois de configurado, atualizar mods vira só arrastar `.jar` numa pasta de rede (zero passos manuais de zip/manifest/upload).
+- **File-server self-hosted (recomendado):** veja `deploy/file-server/README.md` — Samba + watcher automático + Cloudflare Tunnel no Proxmox. Depois de configurado, atualizar mods vira só arrastar `.jar` numa pasta de rede (zero passos manuais de zip/manifest/upload).
 - **Dropbox:** Crie um link de compartilhamento e troque `?dl=0` por `?dl=1`
 - **GitHub Raw:** `https://raw.githubusercontent.com/usuario/repo/main/manifest.json`
 - **Servidor próprio:** Qualquer URL HTTP/HTTPS pública
@@ -195,11 +195,11 @@ Isso gera o `manifest.json` com a versão, link do Dropbox e MD5 do zip. Pra esp
 node scripts/generate-manifest.js ./mods.zip "URL_DROPBOX" ./manifest.json "Default" "1.0.1"
 ```
 
-Esse script só cuida do zip de mods — `loader`/`loaderVersion`/`host`/`port` você edita direto no `manifest.json` (ou deixa o watcher do Pi preencher `loader`/`loaderVersion`, veja `deploy/pi-server/README.md`).
+Esse script só cuida do zip de mods — `loader`/`loaderVersion`/`host`/`port` você edita direto no `manifest.json` (ou deixa o watcher do file-server preencher `loader`/`loaderVersion`, veja `deploy/file-server/README.md`).
 
 ### 🔄 Como atualizar mods
 
-**Opção recomendada (self-hosted no Pi):** veja `deploy/pi-server/README.md`. Você arrasta a pasta do modpack (mods + `instance.json` exportado do ATLauncher) pra um drive de rede, e o watcher zipa os mods, importa a versão/loader e a lista completa de mods do `instance.json`, e publica tudo sozinho.
+**Opção recomendada (self-hosted no file-server):** veja `deploy/file-server/README.md`. Você arrasta a pasta do modpack (mods + `instance.json` exportado do ATLauncher) pra um drive de rede, e o watcher zipa os mods, importa a versão/loader e a lista completa de mods do `instance.json`, e publica tudo sozinho.
 
 **Manual (Dropbox/GitHub):**
 1. Atualize os `.jar` na sua pasta de mods, compacte num novo `mods.zip`, suba no Dropbox
@@ -251,9 +251,9 @@ Esse script só cuida do zip de mods — `loader`/`loaderVersion`/`host`/`port` 
 ```
 
 - `loader`: `"vanilla"`, `"forge"`, `"neoforge"` ou `"fabric"`. Para vanilla, omita `loaderVersion`/`versionJsonUrl`/`versionJsonMd5`.
-- `loader`, `loaderVersion`, `javaMajor`, `versionJsonUrl`, `versionJsonMd5`, `modsListUrl` e `modsListMd5` são preenchidos automaticamente pelo watcher do Pi a partir de um `instance.json` do ATLauncher (veja `deploy/pi-server/README.md`) — só `host`/`port` são configurados à mão.
+- `loader`, `loaderVersion`, `javaMajor`, `versionJsonUrl`, `versionJsonMd5`, `modsListUrl` e `modsListMd5` são preenchidos automaticamente pelo watcher do file-server a partir de um `instance.json` do ATLauncher (veja `deploy/file-server/README.md`) — só `host`/`port` são configurados à mão.
 - `modsListUrl` aponta pra um JSON com nome, versão, autor, ícone e descrição de cada mod (usado na aba Mods do launcher) — gerado a partir do `launcher.mods` do `instance.json`.
-- `extrasVersion`/`extrasZipUrl`/`extrasZipMd5`: config/shaderpacks/resourcepacks/options.txt/etc — qualquer coisa que o admin solte na pasta do perfil no Pi além de `mods/` e `instance.json`. Também preenchido sozinho pelo watcher (zip `extras.zip`); sincronizado como *overlay* (nunca apaga saves/logs do player, só sobrescreve o que veio no zip). Omitido se o perfil não tiver nenhum extra.
+- `extrasVersion`/`extrasZipUrl`/`extrasZipMd5`: config/shaderpacks/resourcepacks/options.txt/etc — qualquer coisa que o admin solte na pasta do perfil no file-server além de `mods/` e `instance.json`. Também preenchido sozinho pelo watcher (zip `extras.zip`); sincronizado como *overlay* (nunca apaga saves/logs do player, só sobrescreve o que veio no zip). Omitido se o perfil não tiver nenhum extra.
 - `host`/`port`: endereço do servidor Minecraft, mostrado no card do launcher com ping ao vivo.
 
 **Tags de notícia disponíveis:** `update`, `maintenance`, `event`, `info`
@@ -264,7 +264,7 @@ O launcher em si (não só os mods) se atualiza sozinho via `electron-updater`. 
 
 1. Bump o campo `version` em `package.json`, commit
 2. Crie e dê push numa tag igual à versão: `git tag v1.0.1 && git push origin v1.0.1`
-3. O GitHub Actions builda o `.exe` e publica como GitHub Release; o Pi detecta a release nova e publica sozinho no feed — veja `deploy/pi-server/README.md`
+3. O GitHub Actions builda o `.exe` e publica como GitHub Release; o file-server detecta a release nova e publica sozinho no feed — veja `deploy/file-server/README.md`
 
 `npm run publish-launcher` continua disponível como atalho manual (builda local e sobe via SSH na hora, sem esperar o Actions).
 
@@ -314,6 +314,6 @@ Instalações antigas (`~/.UmuCraft`, antes da v1.0.1) são migradas automaticam
 - **IPC Bridge**: `preload.js` expõe `window.launcher.*` com métodos seguros via `contextBridge`
 - **Estilos**: CSS modular importado no `index.html`
 
-Detalhes de infra do servidor (Pi, Samba, nginx, Cloudflare Tunnel, painel admin, releases automatizadas) ficam em `deploy/pi-server/README.md`. Práticas de git/versionamento/release ficam em `CLAUDE.md`.
+Detalhes de infra do servidor (file-server Proxmox, Samba, nginx, Cloudflare Tunnel, painel admin, releases automatizadas) ficam em `deploy/file-server/README.md`. Práticas de git/versionamento/release ficam em `CLAUDE.md`.
 
 </details>
