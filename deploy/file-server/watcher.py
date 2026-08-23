@@ -54,6 +54,10 @@ EXTRAS_EXCLUDE_TOP = {"mods", "instance.json", "saves", "logs", "crash-reports",
 EXTRAS_EXCLUDE_NAMES = {".DS_Store", "Thumbs.db"}
 PACK_ZIP_SKIP_TOP = {"saves", "logs", "crash-reports", "screenshots"}
 
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+log = logging.getLogger("umucraft-watcher")
+
+
 def is_real_profile_name(name: str) -> bool:
     """Ignora lixo do SMB/Windows (ex: .::TMPNAME:...) e arquivos ocultos."""
     if not name or name.startswith("."):
@@ -164,6 +168,8 @@ def unpack_pack_zip(profile_name: str, profile_dir: Path, rebuilder: Optional["D
                 if not parts:
                     continue
                 if parts[0] in PACK_ZIP_SKIP_TOP:
+                    continue
+                if parts[0].startswith("."):
                     continue
                 if Path(rel).name in EXTRAS_EXCLUDE_NAMES:
                     continue
