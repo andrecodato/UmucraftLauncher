@@ -1,6 +1,7 @@
 'use strict';
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 const { spawn } = require('child_process');
 const extractZip = require('extract-zip');
 const { JAVA_VERSIONS, BASE_DIR } = require('../utils/paths');
@@ -176,11 +177,33 @@ function dedupeLibraries(libraries) {
 }
 
 /**
+ * Mojang version JSON uses windows/linux/osx — not Node's process.platform.
+ */
+function getMinecraftOs() {
+  switch (process.platform) {
+    case 'win32': return 'windows';
+    case 'darwin': return 'osx';
+    case 'linux': return 'linux';
+    default: return process.platform;
+  }
+}
+
+/**
+ * ${arch} in native classifiers is 64/32 (legacy); arm stays as-is when present.
+ */
+function getNativeArchToken() {
+  if (process.arch === 'x64') return '64';
+  if (process.arch === 'ia32') return '32';
+  return process.arch;
+}
+
+/**
  * Check OS rules for a library or argument.
  * Also rejects rules gated by features (e.g. has_custom_resolution, is_demo_user).
  */
 function isAllowed(rules) {
   if (!rules || rules.length === 0) return true;
+  const currentOs = getMinecraftOs();
   let allowed = false;
   for (const rule of rules) {
     // Rules requiring features we don't support should block the entry
@@ -189,7 +212,18 @@ function isAllowed(rules) {
       if (rule.action === 'disallow') allowed = false;
       continue;
     }
-    const osMatch = !rule.os || rule.os.name === 'windows';
+    let osMatch = true;
+    if (rule.os) {
+      if (rule.os.name && rule.os.name !== currentOs) osMatch = false;
+      if (osMatch && rule.os.arch && rule.os.arch !== process.arch) osMatch = false;
+      if (osMatch && rule.os.version) {
+        try {
+          if (!new RegExp(rule.os.version).test(os.release())) osMatch = false;
+        } catch {
+          osMatch = false;
+        }
+      }
+    }
     if (rule.action === 'allow' && osMatch) allowed = true;
     if (rule.action === 'disallow' && osMatch) allowed = false;
   }
@@ -303,22 +337,35 @@ async function ensureAssets(assetIndex, assetsDir) {
 
 /**
  * Extract native libraries from jars to natives directory.
+ * Marker is OS/arch-scoped so a Windows extract is not reused on Linux
+ * (that left .dlls in place and LWJGL failed with "Failed to locate liblwjgl.so").
  */
 async function extractNatives(libraries, librariesDir, nativesDir) {
   fs.mkdirSync(nativesDir, { recursive: true });
 
-  // Check if natives were already extracted
+  const mcOs = getMinecraftOs();
+  const archToken = getNativeArchToken();
   const markerPath = path.join(nativesDir, '.natives-extracted');
-  if (fs.existsSync(markerPath)) return;
+  const markerValue = `${mcOs}-${archToken}`;
+  if (fs.existsSync(markerPath)) {
+    const existing = fs.readFileSync(markerPath, 'utf8').trim();
+    if (existing === markerValue) return;
+    // Wrong platform (or legacy timestamp-only marker): wipe and re-extract
+    log(`Natives marcador "${existing}" != "${markerValue}"; re-extraindo.`);
+    for (const name of fs.readdirSync(nativesDir)) {
+      fs.rmSync(path.join(nativesDir, name), { recursive: true, force: true });
+    }
+    fs.mkdirSync(nativesDir, { recursive: true });
+  }
 
   for (const lib of libraries) {
     if (!isAllowed(lib.rules)) continue;
     if (!lib.natives) continue;
 
-    const nativeKey = lib.natives['windows'];
+    const nativeKey = lib.natives[mcOs];
     if (!nativeKey) continue;
 
-    const classifier = nativeKey.replace('${arch}', process.arch === 'x64' ? '64' : '32');
+    const classifier = nativeKey.replace('${arch}', archToken);
     const nativeDownload = lib.downloads?.classifiers?.[classifier];
     if (!nativeDownload) continue;
 
@@ -344,9 +391,8 @@ async function extractNatives(libraries, librariesDir, nativesDir) {
     }
   }
 
-  // Mark as extracted
-  fs.writeFileSync(markerPath, Date.now().toString());
-  log('Natives extraídas.');
+  fs.writeFileSync(markerPath, markerValue);
+  log(`Natives extraídas (${markerValue}).`);
 }
 
 /**
