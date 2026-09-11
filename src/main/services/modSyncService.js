@@ -5,7 +5,6 @@ const os = require('os');
 const extractZip = require('extract-zip');
 const { send, log } = require('../utils/ipcSender');
 const { downloadFile } = require('../utils/download');
-const { fileHash } = require('../utils/fileHash');
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -69,18 +68,10 @@ async function syncMods(manifest, profileDir) {
   fs.mkdirSync(tmpDir, { recursive: true });
   const zipPath = path.join(tmpDir, 'mods.zip');
 
-  await downloadFile(modsZipUrl, zipPath, 'Baixando pacote de mods');
-
-  // Verify MD5
-  if (modsZipMd5) {
-    send('sync-progress', { current: 0, total: 1, filename: 'Verificando integridade...', percent: 0 });
-    const hash = fileHash(zipPath);
-    if (hash !== modsZipMd5) {
-      fs.unlinkSync(zipPath);
-      throw new Error(`MD5 inválido: esperado ${modsZipMd5}, obteve ${hash}`);
-    }
-    log('MD5 verificado com sucesso.');
-  }
+  // O md5 vai para o downloader: ele verifica antes de promover o `.part` a
+  // arquivo final, então um zip corrompido nunca chega a existir em disco.
+  await downloadFile(modsZipUrl, zipPath, 'Baixando pacote de mods', { md5: modsZipMd5 || null });
+  if (modsZipMd5) log('MD5 verificado com sucesso.');
 
   // Clear mods folder
   send('sync-progress', { current: 0, total: 1, filename: 'Limpando pasta de mods...', percent: 0 });
@@ -156,15 +147,7 @@ async function syncExtras(manifest, profileDir) {
   const zipPath = path.join(tmpDir, 'extras.zip');
   const extractDir = path.join(tmpDir, 'extracted');
 
-  await downloadFile(extrasZipUrl, zipPath, 'Baixando config/shaders...');
-
-  if (extrasZipMd5) {
-    const hash = fileHash(zipPath);
-    if (hash !== extrasZipMd5) {
-      fs.unlinkSync(zipPath);
-      throw new Error(`MD5 inválido (extras): esperado ${extrasZipMd5}, obteve ${hash}`);
-    }
-  }
+  await downloadFile(extrasZipUrl, zipPath, 'Baixando config/shaders...', { md5: extrasZipMd5 || null });
 
   send('sync-progress', { current: 0, total: 1, filename: 'Extraindo config/shaders...', percent: 50 });
   fs.rmSync(extractDir, { recursive: true, force: true });

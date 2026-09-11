@@ -1,12 +1,10 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
-const https = require('https');
-const http = require('http');
 const { execSync } = require('child_process');
+const { downloadFile } = require('../utils/download');
 
-const DOWNLOAD_TIMEOUT = 5 * 60 * 1000;  // 5 minutes
-const EXTRACT_TIMEOUT  = 3 * 60 * 1000;  // 3 minutes
+const EXTRACT_TIMEOUT = 3 * 60 * 1000;  // 3 minutes
 
 // Cada modpack pode exigir um major diferente (JAVA_VERSIONS em utils/paths.js) —
 // mantemos uma build Temurin fixa e testada por major, em vez de "a mais nova
@@ -38,75 +36,27 @@ class RuntimeInstaller {
   }
 
   /**
-   * Download file with redirect support, timeout, and progress callback.
+   * Download file with redirect support, timeout, retry and progress callback.
+   *
+   * Este método já teve um downloader `https.get` próprio, duplicando (mal) o
+   * de `utils/download.js`. Como é ele quem busca o JDK no GitHub no primeiro
+   * boot, era também o primeiro lugar a falhar com "unable to get local issuer
+   * certificate" atrás de antivírus com inspeção HTTPS — e o único que não se
+   * beneficiava de nenhuma correção feita na camada de rede compartilhada.
+   * Agora delega: um só caminho de rede para o launcher inteiro.
    */
   _downloadFile(url, destPath, onProgress) {
-    return new Promise((resolve, reject) => {
-      let downloaded = 0;
-      let total = 0;
-      let aborted = false;
-      let file = null;
-
-      const timer = setTimeout(() => {
-        aborted = true;
-        if (file) file.destroy();
-        reject(new Error(`Download timed out after ${DOWNLOAD_TIMEOUT / 1000}s`));
-      }, DOWNLOAD_TIMEOUT);
-
-      const cleanup = () => clearTimeout(timer);
-
-      const doRequest = (reqUrl, redirects) => {
-        if (aborted) return;
-        if (redirects > 5) { cleanup(); return reject(new Error('Too many redirects')); }
-
-        const proto = reqUrl.startsWith('https') ? https : http;
-        const req = proto.get(reqUrl, (res) => {
-          if (aborted) return;
-
-          if (res.statusCode === 301 || res.statusCode === 302) {
-            this.logger.log(`Redirect -> ${res.headers.location}`);
-            doRequest(res.headers.location, redirects + 1);
-            return;
-          }
-
-          if (res.statusCode !== 200) {
-            cleanup();
-            return reject(new Error(`HTTP ${res.statusCode} for ${reqUrl}`));
-          }
-
-          total = parseInt(res.headers['content-length'] || '0', 10);
-          this.logger.log(`File size: ${total > 0 ? (total / 1024 / 1024).toFixed(1) + ' MB' : 'unknown'}`);
-
-          file = fs.createWriteStream(destPath);
-
-          res.on('data', (chunk) => {
-            if (aborted) return;
-            downloaded += chunk.length;
-            if (total > 0 && onProgress) {
-              onProgress(Math.round((downloaded / total) * 100), downloaded, total);
-            }
-          });
-
-          res.pipe(file);
-
-          file.on('finish', () => {
-            if (aborted) return;
-            cleanup();
-            file.close(() => resolve());
-          });
-
-          file.on('error', (err) => { cleanup(); reject(err); });
-          res.on('error', (err) => { cleanup(); if (file) file.destroy(); reject(err); });
-        });
-
-        req.on('error', (err) => {
-          if (aborted) return;
-          cleanup();
-          reject(err);
-        });
-      };
-
-      doRequest(url, 0);
+    return downloadFile(url, destPath, 'Java Runtime', {
+      silent: true, // o progresso da tela de bootstrap vem do onProgress
+      onProgress: (percent, downloaded, total) => {
+        if (onProgress) onProgress(percent, downloaded, total);
+      },
+      onRetry: ({ attempt, attempts, error, delayMs }) => {
+        this.logger.log(
+          `Falha de rede baixando o JDK (${error.code || error.message}); `
+          + `nova tentativa em ${Math.round(delayMs / 1000)}s (${attempt}/${attempts - 1})`
+        );
+      },
     });
   }
 

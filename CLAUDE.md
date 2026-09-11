@@ -64,6 +64,47 @@ Mods (`mods.zip`) seguem um fluxo totalmente separado e **não** passam por
 git/GitHub Actions — é o `watcher.py` no file-server observando uma pasta
 de rede (Samba), veja `deploy/file-server/README.md`.
 
+## Camada de rede
+
+Todo acesso HTTP do launcher passa por `src/main/utils/netClient.js`. Não
+use `https.get`/`http.get` direto em lugar nenhum — os dois motivos são
+concretos e já quebraram o launcher em produção:
+
+- **Certificado.** O `https` do Node valida contra um bundle de CAs
+  compilado no binário e **ignora o repositório de certificados do Windows**.
+  Antivírus com inspeção HTTPS (Kaspersky, ESET, Avast, Bitdefender) e
+  proxy corporativo/universitário instalam a própria CA raiz no store do
+  sistema: o Chromium enxerga, o Node não. Sintoma exato:
+  `unable to get local issuer certificate`, sempre, sem depender da
+  qualidade da internet. O `net` do Electron usa a stack do Chromium e
+  resolve — por isso `netClient` prefere ele e só cai no `https` do Node
+  quando não há processo Electron pronto (scripts/testes).
+- **Proxy.** O Chromium honra a configuração de proxy do SO (inclusive
+  PAC/WPAD); o `https` do Node ignora.
+
+O que a camada garante, e portanto o que você **não** precisa reimplementar
+no chamador: retry com backoff exponencial e jitter só em erro classificado
+como transitório (`utils/netErrors.js`), download em `.part` com rename
+atômico no fim, retomada via `Range`, timeout de conexão (30s) separado do
+de ociosidade (60s sem byte novo), keep-alive, `User-Agent`, verificação de
+`sha1`/`md5` antes de promover o arquivo, e tradução do erro técnico para
+uma mensagem acionável ao jogador via `describeNetworkError`.
+
+Duas regras que valem a pena não esquecer:
+
+- **Nunca gravar direto no caminho final.** Todo o código de instalação
+  decide o que baixar com `fs.existsSync()`. Um arquivo truncado por queda
+  de conexão fica no disco parecendo completo para sempre, e o sintoma
+  aparece muito depois, como crash do Minecraft sem relação com rede.
+- **Content-length precisa ser conferido.** Conexão cortada limpa no meio
+  de uma resposta chega no `finish` do write stream sem disparar `error`
+  nenhum: sem comparar os bytes recebidos com o `content-length`, o
+  parcial seria promovido a arquivo bom.
+
+Concorrência de download é 8 (era 16). Com keep-alive, 8 entrega a mesma
+vazão com metade dos sockets — e socket demais em conexão doméstica
+saturada é o caminho mais curto para `ECONNRESET`.
+
 ## Gotchas de infra já mordidos
 
 - **Arquivo temporário → permissão restritiva → nginx 403.**

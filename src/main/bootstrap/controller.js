@@ -2,6 +2,7 @@
 const BootstrapLogger = require('./logger');
 const RuntimeDetector = require('./detector');
 const RuntimeInstaller = require('./installer');
+const { describeNetworkError } = require('../utils/netErrors');
 
 /**
  * Orchestrates the bootstrap flow with clear state transitions:
@@ -102,10 +103,13 @@ class BootstrapController {
         source: 'installed',
       };
     } catch (err) {
-      this.error = err.message;
-      this.setState('failed', err.message);
+      // Mesma divisão do launcherIpc: stack completo no bootstrap.log,
+      // explicação acionável na tela de bootstrap.
+      const friendly = describeNetworkError(err);
+      this.error = friendly;
+      this.setState('failed', friendly);
       this.logger.error(err.stack || err.message);
-      return { ok: false, error: err.message };
+      return { ok: false, error: friendly };
     }
   }
 

@@ -33,7 +33,9 @@ async function ensureDefaultProfile() {
         if (clientUrl) {
           log(`Downloading Minecraft ${LATEST_MC_VERSION} client...`);
           send('status', `Baixando Minecraft ${LATEST_MC_VERSION}...`);
-          await downloadFile(clientUrl, clientJar, `Minecraft ${LATEST_MC_VERSION}`);
+          await downloadFile(clientUrl, clientJar, `Minecraft ${LATEST_MC_VERSION}`, {
+            sha1: versionMeta.downloads?.client?.sha1 || null,
+          });
 
           fs.writeFileSync(
             path.join(versionDir, `${LATEST_MC_VERSION}.json`),
