@@ -1,26 +1,18 @@
 'use strict';
-const https = require('https');
-const http = require('http');
+const { httpGetJson } = require('../utils/http');
 const { CONFIG } = require('../utils/paths');
 
+/**
+ * Busca o `manifest.json` publicado pelo file-server.
+ *
+ * Era um `https.get` próprio que resolvia `JSON.parse` do corpo sem olhar o
+ * status HTTP: um 404 ou uma página de portal cativo virava "Unexpected
+ * token '<'". Passou a usar a camada compartilhada, que checa status, segue
+ * redirect com limite, tenta de novo em falha transitória e sai pela stack
+ * de rede do Electron (repositório de certificados e proxy do sistema).
+ */
 function fetchManifest() {
-  return new Promise((resolve, reject) => {
-    const request = (url) => {
-      const proto = url.startsWith('https') ? https : http;
-      proto.get(url, (res) => {
-        if (res.statusCode === 301 || res.statusCode === 302 || res.statusCode === 303) {
-          res.resume();
-          return request(res.headers.location);
-        }
-        let data = '';
-        res.on('data', c => data += c);
-        res.on('end', () => {
-          try { resolve(JSON.parse(data)); } catch (e) { reject(e); }
-        });
-      }).on('error', reject);
-    };
-    request(CONFIG.MANIFEST_URL);
-  });
+  return httpGetJson(CONFIG.MANIFEST_URL);
 }
 
 module.exports = { fetchManifest };

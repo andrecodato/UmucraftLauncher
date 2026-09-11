@@ -18,7 +18,12 @@ const MojangJavaInstaller = require('../bootstrap/mojangJava');
 // downloading them one at a time makes latency (not bandwidth) the
 // bottleneck. This many in flight at once is a big speedup without
 // hammering Mojang's CDN.
-const DOWNLOAD_CONCURRENCY = 16;
+//
+// Era 16, baixado para 8: com keep-alive as conexões agora são reaproveitadas,
+// então 8 entrega a mesma vazão com metade dos sockets — e socket demais numa
+// conexão doméstica saturada é justamente o que faz a CDN (ou o roteador)
+// cortar conexão no meio do download (ECONNRESET).
+const DOWNLOAD_CONCURRENCY = 8;
 
 function getRequiredJavaVersion(minecraftVersion, javaMajorHint) {
   if (javaMajorHint) {
@@ -257,16 +262,18 @@ async function ensureLibraries(libraries, librariesDir) {
 
     if (!fs.existsSync(libPath)) {
       const url = lib.downloads?.artifact?.url;
-      if (url) missing.push({ url, libPath });
+      // O manifesto da Mojang publica o sha1 de cada artefato; repassamos
+      // para o downloader validar antes de gravar o arquivo definitivo.
+      if (url) missing.push({ url, libPath, sha1: lib.downloads?.artifact?.sha1 || null });
     }
   }
 
   if (missing.length === 0) return;
 
   let completed = 0;
-  await mapWithConcurrency(missing, DOWNLOAD_CONCURRENCY, async ({ url, libPath }) => {
+  await mapWithConcurrency(missing, DOWNLOAD_CONCURRENCY, async ({ url, libPath, sha1 }) => {
     fs.mkdirSync(path.dirname(libPath), { recursive: true });
-    await downloadFile(url, libPath, `Lib: ${path.basename(libPath)}`, { silent: true });
+    await downloadFile(url, libPath, `Lib: ${path.basename(libPath)}`, { silent: true, sha1 });
     completed++;
     const pct = Math.round((completed / missing.length) * 100);
     send('download-progress', { label: 'Libraries', percent: pct, downloaded: completed, total: missing.length });
@@ -290,7 +297,9 @@ async function ensureAssets(assetIndex, assetsDir) {
   if (!fs.existsSync(indexPath)) {
     log(`Baixando asset index ${assetIndex.id}...`);
     send('status', `Baixando asset index...`);
-    await downloadFile(assetIndex.url, indexPath, `Asset index ${assetIndex.id}`);
+    await downloadFile(assetIndex.url, indexPath, `Asset index ${assetIndex.id}`, {
+      sha1: assetIndex.sha1 || null,
+    });
   }
 
   const indexJson = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
@@ -324,7 +333,9 @@ async function ensureAssets(assetIndex, assetsDir) {
   await mapWithConcurrency(missing, DOWNLOAD_CONCURRENCY, async ({ hash, prefix, objDir, objPath }) => {
     fs.mkdirSync(objDir, { recursive: true });
     const url = `https://resources.download.minecraft.net/${prefix}/${hash}`;
-    await downloadFile(url, objPath, 'Assets', { silent: true });
+    // No armazenamento de assets da Mojang o nome do arquivo *é* o sha1 do
+    // conteúdo, então a verificação sai de graça.
+    await downloadFile(url, objPath, 'Assets', { silent: true, sha1: hash });
 
     completed++;
     const pct = Math.round((completed / missing.length) * 100);
@@ -374,7 +385,9 @@ async function extractNatives(libraries, librariesDir, nativesDir) {
     // Download native jar if missing
     if (!fs.existsSync(nativePath)) {
       fs.mkdirSync(path.dirname(nativePath), { recursive: true });
-      await downloadFile(nativeDownload.url, nativePath, `Native: ${path.basename(nativePath)}`);
+      await downloadFile(nativeDownload.url, nativePath, `Native: ${path.basename(nativePath)}`, {
+        sha1: nativeDownload.sha1 || null,
+      });
     }
 
     // Extract

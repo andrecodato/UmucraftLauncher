@@ -4,7 +4,6 @@ const fs = require('fs');
 const { send, log } = require('../utils/ipcSender');
 const { downloadFile } = require('../utils/download');
 const { httpGetJson } = require('../utils/http');
-const { fileHash } = require('../utils/fileHash');
 
 function slugify(str) {
   const slug = String(str || '')
@@ -45,7 +44,9 @@ async function ensureMinecraftInstalled(gameRoot, mcVersion) {
   fs.mkdirSync(versionDir, { recursive: true });
 
   const clientJar = path.join(versionDir, `${mcVersion}.jar`);
-  await downloadFile(clientUrl, clientJar, `Minecraft ${mcVersion}`);
+  await downloadFile(clientUrl, clientJar, `Minecraft ${mcVersion}`, {
+    sha1: versionMeta.downloads?.client?.sha1 || null,
+  });
 
   fs.writeFileSync(
     path.join(versionDir, `${mcVersion}.json`),
@@ -86,18 +87,13 @@ async function ensureVersionJson({ gameRoot, mcVersion, loader, loaderVersion, v
   send('status', `Baixando ${loader} ${loaderVersion}...`);
 
   fs.mkdirSync(versionDir, { recursive: true });
-  const tmpPath = path.join(versionDir, `${versionId}.json.tmp`);
-  await downloadFile(versionJsonUrl, tmpPath, `${loader} ${loaderVersion}`, { silent: true });
+  // O downloader já grava em `.part` e só renomeia depois de conferir o md5,
+  // então o arquivo final nunca existe num estado intermediário.
+  await downloadFile(versionJsonUrl, versionJsonPath, `${loader} ${loaderVersion}`, {
+    silent: true,
+    md5: versionJsonMd5 || null,
+  });
 
-  if (versionJsonMd5) {
-    const hash = fileHash(tmpPath);
-    if (hash !== versionJsonMd5) {
-      fs.unlinkSync(tmpPath);
-      throw new Error(`MD5 do version.json inválido para ${loader} ${loaderVersion}: esperado ${versionJsonMd5}, obteve ${hash}`);
-    }
-  }
-
-  fs.renameSync(tmpPath, versionJsonPath);
   log(`${loader} ${loaderVersion} instalado (${versionId}).`);
 
   return versionId;

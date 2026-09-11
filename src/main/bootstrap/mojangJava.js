@@ -1,7 +1,6 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
-const crypto = require('crypto');
 const { httpGetJson } = require('../utils/http');
 const { downloadFile } = require('../utils/download');
 const { mapWithConcurrency } = require('../utils/concurrency');
@@ -15,7 +14,9 @@ const { mapWithConcurrency } = require('../utils/concurrency');
 // launches fine under this one.
 const RUNTIME_INDEX_URL = 'https://piston-meta.mojang.com/v1/products/java-runtime/2ec0cc96c44e5a76b9c8b7c39df7210883d12871/all.json';
 
-const DOWNLOAD_CONCURRENCY = 16;
+// Ver a nota em services/minecraftLauncher.js: com keep-alive, 8 conexões
+// entregam a mesma vazão que 16 e reduzem muito o risco de ECONNRESET.
+const DOWNLOAD_CONCURRENCY = 8;
 
 function mojangPlatformKey() {
   const { platform, arch } = process;
@@ -96,14 +97,13 @@ class MojangJavaInstaller {
       const destPath = path.join(dest, relPath);
       fs.mkdirSync(path.dirname(destPath), { recursive: true });
       const raw = entry.downloads.raw;
-      await downloadFile(raw.url, destPath, `Java (${component})`, { silent: true });
-
-      if (raw.sha1) {
-        const hash = crypto.createHash('sha1').update(fs.readFileSync(destPath)).digest('hex');
-        if (hash !== raw.sha1) {
-          throw new Error(`Hash invalido para ${relPath}: esperado ${raw.sha1}, obteve ${hash}`);
-        }
-      }
+      // O sha1 vai para o downloader: ele confere antes de promover o `.part`,
+      // então um arquivo com hash errado nunca chega a existir no destino (e
+      // ainda ganha uma nova tentativa de download automaticamente).
+      await downloadFile(raw.url, destPath, `Java (${component})`, {
+        silent: true,
+        sha1: raw.sha1 || null,
+      });
 
       if (entry.executable && process.platform !== 'win32') {
         fs.chmodSync(destPath, 0o755);

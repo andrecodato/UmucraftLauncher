@@ -5,6 +5,7 @@ const fs = require('fs');
 const { BASE_DIR, CONFIG, LATEST_MC_VERSION } = require('../utils/paths');
 const { send, log } = require('../utils/ipcSender');
 const { httpGetJson } = require('../utils/http');
+const { describeNetworkError } = require('../utils/netErrors');
 const { fetchManifest } = require('../services/manifestService');
 const { syncMods, syncExtras } = require('../services/modSyncService');
 const { getRequiredJavaVersion, launchMinecraft } = require('../services/minecraftLauncher');
@@ -33,7 +34,7 @@ function registerLauncherIpc() {
         log(`Could not reach server, using cached manifest: ${err.message}`);
         return { ok: true, manifest: JSON.parse(fs.readFileSync(cachePath, 'utf8')), cached: true };
       }
-      return { ok: false, error: err.message };
+      return { ok: false, error: describeNetworkError(err) };
     }
   });
 
@@ -48,7 +49,7 @@ function registerLauncherIpc() {
       if (fs.existsSync(cachePath)) {
         return { ok: true, modsList: JSON.parse(fs.readFileSync(cachePath, 'utf8')), cached: true };
       }
-      return { ok: false, error: err.message };
+      return { ok: false, error: describeNetworkError(err) };
     }
   });
 
@@ -115,8 +116,10 @@ function registerLauncherIpc() {
         javaMajor: javaInfo.major,
       };
     } catch (err) {
+      // O log guarda o erro técnico cru (é ele que serve para depurar);
+      // a UI recebe a versão que diz ao jogador o que de fato fazer.
       log(`ERRO: ${err.message}`);
-      return { ok: false, error: err.message };
+      return { ok: false, error: describeNetworkError(err) };
     }
   });
 
@@ -141,8 +144,10 @@ function registerLauncherIpc() {
       send('launched', { pid });
       return { ok: true, pid };
     } catch (err) {
+      // O log guarda o erro técnico cru (é ele que serve para depurar);
+      // a UI recebe a versão que diz ao jogador o que de fato fazer.
       log(`ERRO: ${err.message}`);
-      return { ok: false, error: err.message };
+      return { ok: false, error: describeNetworkError(err) };
     }
   });
 }
